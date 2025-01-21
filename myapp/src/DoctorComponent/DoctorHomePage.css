@@ -1,0 +1,76 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+  }
+  
+  /* Header Styles */
+  .header {
+    background-color: #0077b6;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .header h1 {
+    margin: 0;
+  }
+  
+  .header nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1rem;
+  }
+  
+  .header nav a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Main Content Styles */
+  main {
+    padding: 2rem;
+  }
+  
+  .appointments {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .appointments h2 {
+    color: #0077b6;
+  }
+  
+  .appointments-list {
+    margin-top: 1rem;
+  }
+  
+  .appointment-card {
+    background-color: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .appointment-card h3 {
+    margin: 0;
+    color: #0077b6;
+  }
+  
+  .appointment-card p {
+    margin: 0.5rem 0;
+  }
+  
+  /* Footer Styles */
+  footer {
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+    background-color: #0077b6;
+    color: white;
+  }
+  
