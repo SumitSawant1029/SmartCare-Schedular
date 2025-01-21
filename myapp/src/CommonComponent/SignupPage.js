@@ -12,20 +12,77 @@ const SignUpPage = () => {
     email: "",
     password: "",
     DOB: "",
-  
   });
+
+  const [cnfpassword, setCnfPassword] = useState(""); // State for confirm password
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true); // State for button disable/enable
+  const [errors, setErrors] = useState({}); // State for validation errors
 
   const navigate = useNavigate();
 
+  const validateField = (name, value) => {
+    const newErrors = { ...errors };
+
+    switch (name) {
+      case "email":
+        if (!/^\S+@\S+\.\S+$/.test(value)) {
+          newErrors.email = "Invalid email format";
+        } else {
+          delete newErrors.email;
+        }
+        break;
+
+      case "mob":
+        if (!/^\d{10}$/.test(value)) {
+          newErrors.mob = "Mobile number must be 10 digits";
+        } else {
+          delete newErrors.mob;
+        }
+        break;
+
+      case "password":
+        if (value.length < 6) {
+          newErrors.password = "Password must be at least 6 characters";
+        } else {
+          delete newErrors.password;
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    setErrors(newErrors);
+  };
+
   const handleChange = (e) => {
-    setSignUpData({
-      ...signUpData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    if (name === "cnfpassword") {
+      setCnfPassword(value);
+      setIsButtonDisabled(value !== signUpData.password); // Enable button only if passwords match
+    } else {
+      setSignUpData({
+        ...signUpData,
+        [name]: value,
+      });
+
+      validateField(name, value); // Validate the field on change
+
+      if (name === "password") {
+        setIsButtonDisabled(value !== cnfpassword); // Update button state when password changes
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check for any remaining validation errors
+    if (Object.keys(errors).length > 0) {
+      alert("Please fix the errors before submitting.");
+      return;
+    }
 
     try {
       const response = await fetch(`${API_URL}/auth/createuser`, {
@@ -37,9 +94,9 @@ const SignUpPage = () => {
       });
 
       const result = await response.json();
-      if (result.success ) {
+      if (result.success) {
         alert("Account created successfully!");
-        navigate("/login");  // Redirect to login page after successful sign-up
+        navigate("/login"); // Redirect to login page after successful sign-up
       } else {
         alert(result.message);
       }
@@ -88,6 +145,7 @@ const SignUpPage = () => {
           onChange={handleChange}
           required
         />
+        {errors.mob && <p className="error">{errors.mob}</p>}
         <input
           type="email"
           name="email"
@@ -96,6 +154,7 @@ const SignUpPage = () => {
           onChange={handleChange}
           required
         />
+        {errors.email && <p className="error">{errors.email}</p>}
         <input
           type="password"
           name="password"
@@ -104,13 +163,18 @@ const SignUpPage = () => {
           onChange={handleChange}
           required
         />
+        {errors.password && <p className="error">{errors.password}</p>}
         <input
-          type="cnfpassword"
+          type="password"
           name="cnfpassword"
           placeholder="Confirm Password"
+          value={cnfpassword}
           onChange={handleChange}
           required
         />
+        {cnfpassword && cnfpassword !== signUpData.password && (
+          <p className="error">Passwords do not match</p>
+        )}
         <input
           type="date"
           name="DOB"
@@ -118,7 +182,9 @@ const SignUpPage = () => {
           onChange={handleChange}
           required
         />
-        <button type="submit">Sign Up</button>
+        <button type="submit" disabled={isButtonDisabled}>
+          Sign Up
+        </button>
       </form>
       <p className="login-link">
         Already have an account? <a href="/login">Login</a>
