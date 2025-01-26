@@ -26,6 +26,38 @@ const transporter = nodemailer.createTransport({
 });
 
 // ROUTE 1: Create a User using: POST "/api/auth/createuser". No OTP required
+// Add this route to fetch user details using authtoken
+router.post('/getuserdetails', fetchuser, async (req, res) => {
+  try {
+    // Fetch the user ID from the token (set in the middleware)
+    const userId = req.user.id;
+
+    // Find the user in the database by ID
+    const user = await User.findById(userId).select('-password'); // Exclude the password
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Return user details
+    res.status(200).json({
+      success: true,
+      data: {
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        mob: user.mob,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+// Update user creation route to generate and return authtoken
 router.post(
   '/createuser',
   [
@@ -71,14 +103,24 @@ router.post(
       });
 
       await user.save();
-      res.json({ success: true, message: 'User created successfully! Please verify your email.' });
 
+      // Generate authtoken
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+
+      const authtoken = jwt.sign(data, JWT_SECRET);
+
+      res.json({ success: true, authtoken, message: 'User created successfully! Please verify your email.' });
     } catch (error) {
       console.error(error.message);
       res.status(500).send('Internal Server Error');
     }
   }
 );
+
 
 // ROUTE 2: Send OTP to email using: POST "/api/auth/sendotp"
 router.post('/sendotp', async (req, res) => {
@@ -215,5 +257,39 @@ router.get('/getallusers', async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+router.get("/user", async (req, res) => {
+  const { email } = req.body; // Extract email from query parameters
+
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
+
+  try {
+    // Find the user in the database by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Return user data (excluding sensitive information like password)
+    res.status(200).json({
+      success: true,
+      data: {
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        mob: user.mob,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+      },
+    });
+  } catch (error) {
+    console.error("Error retrieving user data:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 
 module.exports = router;

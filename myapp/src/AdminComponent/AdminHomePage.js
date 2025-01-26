@@ -10,6 +10,8 @@ const AdminHomePage = () => {
     totalDoctors: 0,
     totalPatients: 0,
   });
+  const [selectedUser, setSelectedUser] = useState(null); // New state for selected user
+  const [error, setError] = useState(null); // New state for error handling
 
   // Fetch users from the API
   const fetchUsers = async () => {
@@ -29,8 +31,43 @@ const AdminHomePage = () => {
     }
   };
 
+  // Fetch user details using the authtoken
+  const fetchUserDetails = async () => {
+    try {
+      const token = localStorage.getItem('authToken'); // Assuming token is stored in localStorage
+
+      if (!token) {
+        setError('No authentication token found');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/auth/getuserdetails`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          authtoken: token, // Send token in the request body
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSelectedUser(data.data); // Access the actual user data here
+        console.log(data); // Store the user details
+      } else {
+        setError(data.message || 'User not found');
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      setError('Error fetching user details');
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchUserDetails(); // Fetch logged-in user details when component mounts
   }, []);
 
   const renderTable = (role, title) => {
@@ -67,12 +104,12 @@ const AdminHomePage = () => {
   return (
     <div className="admin-dashboard">
       <header className="admin-header">
-        <h1>Welcome, Admin</h1>
+        <h1>Welcome, {selectedUser ? selectedUser.firstname : 'Loading...'} !</h1> {/* Display firstname here */}
         <nav>
-        <Link to="/adminhomepage"><a href="/">Dashboard</a></Link>
-          <Link to="/managedoctor"><a href="/doctors">Manage Doctors</a></Link>
-          <Link to="/managepatient"><a href="/patients">Manage Patients</a></Link>
-          <Link to="/"> <a href="/logout">Logout</a></Link>
+          <Link to="/adminhomepage">Dashboard</Link>
+          <Link to="/managedoctor">Manage Doctors</Link>
+          <Link to="/managepatient">Manage Patients</Link>
+          <Link to="/logout">Logout</Link>
         </nav>
       </header>
 
@@ -96,6 +133,20 @@ const AdminHomePage = () => {
         </section>
 
         {renderTable('Admin', 'Admin')}
+
+        {selectedUser && (
+          <section className="user-details">
+            <h2>User Details</h2>
+            <p><strong>First Name:</strong> {selectedUser.firstname}</p>
+            <p><strong>Last Name:</strong> {selectedUser.lastname}</p>
+            <p><strong>Email:</strong> {selectedUser.email}</p>
+            <p><strong>Mobile:</strong> {selectedUser.mob}</p>
+            <p><strong>Role:</strong> {selectedUser.role}</p>
+            <p><strong>Email Verified:</strong> {selectedUser.isEmailVerified ? 'Yes' : 'No'}</p>
+          </section>
+        )}
+
+        {error && <p className="error">{error}</p>} {/* Display error message if any */}
       </main>
 
       <footer>

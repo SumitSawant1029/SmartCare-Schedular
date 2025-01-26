@@ -69,10 +69,13 @@ const ManageDoctor = () => {
       <header className="admin-header">
         <h1>Welcome, Admin</h1>
         <nav>
-        <Link to="/adminhomepage"><a href="/">Dashboard</a></Link>
-        <Link to="/managedoctor"><a href="/doctors">Manage Doctors</a></Link>
-        <Link to="/managepatient"><a href="/patients">Manage Patients</a></Link>
-        <Link to="/"> <a href="/logout">Logout</a></Link>
+        <nav>
+  <Link to="/adminhomepage">Dashboard</Link>
+  <Link to="/managedoctor">Manage Doctors</Link>
+  <Link to="/managepatient">Manage Patients</Link>
+  <Link to="/logout">Logout</Link>
+</nav>
+
         </nav>
       </header>
 
