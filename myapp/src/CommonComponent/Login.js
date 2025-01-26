@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import API_URL from "../config";
 import { useNavigate } from "react-router-dom";
-import './Login.css';  // Import the updated CSS
+import './Login.css';
 
 const LoginPage = () => {
   const [loginData, setLoginData] = useState({
@@ -22,7 +22,7 @@ const LoginPage = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,11 +31,24 @@ const LoginPage = () => {
       });
 
       const result = await response.json();
+      console.log(result);
       if (result.success) {
-        alert("Login successful!");
-        navigate("/dashboard");  // Redirect to dashboard or home page
+        localStorage.setItem("authToken", result.authtoken);
+        
+        // Assuming the response contains the role of the user
+        const userRole = result.role;
+        // Navigate based on the role
+        if (userRole === "Admin") {
+          navigate("/adminhomepage");
+        } else if (userRole === "Doctor") {
+          navigate("/doctorhomepage");
+        } else if (userRole === "Patient") {
+          navigate("/patienthomepage");
+        } else {
+          alert("Role not recognized!");
+        }
       } else {
-        alert(result.message);
+        alert(result.error);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -66,7 +79,7 @@ const LoginPage = () => {
         <button type="submit">Login</button>
       </form>
       <p className="signup-link">
-        Don't have an account? <a href="/signup">Create New Account</a>
+        Don't have an account? <a href="/signup">Sign Up</a>
       </p>
     </div>
   );

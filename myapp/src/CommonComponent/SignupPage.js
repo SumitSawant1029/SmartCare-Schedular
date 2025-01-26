@@ -1,120 +1,170 @@
 import React, { useState } from "react";
-import API_URL from "../config";
 import { useNavigate } from "react-router-dom";
-import './SignupPage.css';  // Import the updated CSS
+import "./SignupPage.css";
 
-const SignUpPage = () => {
-  const [signUpData, setSignUpData] = useState({
+const SignupPage = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
-    gender: "",
+    gender: "Male",
     mob: "",
-    email: "",
-    password: "",
     DOB: "",
+    role: "Patient",
+    password: "",
+    cnfpassword: "",
+    email: "",
   });
 
-  const [cnfpassword, setCnfPassword] = useState(""); // State for confirm password
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true); // State for button disable/enable
-  const [errors, setErrors] = useState({}); // State for validation errors
-
-  const navigate = useNavigate();
-
-  const validateField = (name, value) => {
-    const newErrors = { ...errors };
-
-    switch (name) {
-      case "email":
-        if (!/^\S+@\S+\.\S+$/.test(value)) {
-          newErrors.email = "Invalid email format";
-        } else {
-          delete newErrors.email;
-        }
-        break;
-
-      case "mob":
-        if (!/^\d{10}$/.test(value)) {
-          newErrors.mob = "Mobile number must be 10 digits";
-        } else {
-          delete newErrors.mob;
-        }
-        break;
-
-      case "password":
-        if (value.length < 6) {
-          newErrors.password = "Password must be at least 6 characters";
-        } else {
-          delete newErrors.password;
-        }
-        break;
-
-      default:
-        break;
-    }
-
-    setErrors(newErrors);
-  };
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
 
-    if (name === "cnfpassword") {
-      setCnfPassword(value);
-      setIsButtonDisabled(value !== signUpData.password); // Enable button only if passwords match
-    } else {
-      setSignUpData({
-        ...signUpData,
-        [name]: value,
+    // Check if passwords match and validate for spaces
+    if (name === "password") {
+      setIsPasswordValid(!value.includes(" "));
+      setIsButtonDisabled(
+        formData.password !== formData.cnfpassword ||
+          !otpVerified ||
+          value.includes(" ")
+      );
+    } else if (name === "cnfpassword") {
+      setIsButtonDisabled(
+        formData.password !== value || !otpVerified || formData.password.includes(" ")
+      );
+    }
+  };
+
+  const handleOtpChange = (e) => {
+    setOtp(e.target.value);
+  };
+
+  const sendOtp = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/sendotp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: formData.email }),
       });
 
-      validateField(name, value); // Validate the field on change
-
-      if (name === "password") {
-        setIsButtonDisabled(value !== cnfpassword); // Update button state when password changes
+      const result = await response.json();
+      if (result.success) {
+        setOtpSent(true);
+        alert("OTP sent to your email. Please verify.");
+      } else {
+        alert(result.message);
       }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Something went wrong while sending OTP!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/verifyotp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          otp,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setOtpVerified(true);
+        setOtpError("");
+        setIsButtonDisabled(false);
+        alert("OTP verified successfully! You can now sign up.");
+      } else {
+        setOtpVerified(false);
+        setOtpError(result.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Something went wrong while verifying OTP!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check for any remaining validation errors
-    if (Object.keys(errors).length > 0) {
+    const newErrors = {};
+    if (!formData.firstname) newErrors.firstname = "First name is required";
+    if (!formData.lastname) newErrors.lastname = "Last name is required";
+    if (!formData.mob || formData.mob.length !== 10) newErrors.mob = "Mobile number must be 10 digits";
+    if (!formData.DOB) newErrors.DOB = "Date of birth is required";
+    if (formData.password !== formData.cnfpassword) newErrors.password = "Passwords do not match";
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
       alert("Please fix the errors before submitting.");
       return;
     }
 
+    const userData = {
+      ...formData,
+      role: "Patient",
+      date: new Date().toISOString(),
+    };
+
+    setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/auth/createuser`, {
+      const response = await fetch("http://localhost:5000/api/auth/createuser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(signUpData),
+        body: JSON.stringify(userData),
       });
 
       const result = await response.json();
       if (result.success) {
         alert("Account created successfully!");
-        navigate("/login"); // Redirect to login page after successful sign-up
+        navigate("/login");
       } else {
         alert(result.message);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong!");
+      alert("Something went wrong during sign-up!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="signup-container">
-      <h2>Create Account</h2>
+    <div className="signup-form-container">
+      <h2>Create Your Account</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
           name="firstname"
           placeholder="First Name"
-          value={signUpData.firstname}
+          value={formData.firstname}
           onChange={handleChange}
           required
         />
@@ -122,17 +172,16 @@ const SignUpPage = () => {
           type="text"
           name="lastname"
           placeholder="Last Name"
-          value={signUpData.lastname}
+          value={formData.lastname}
           onChange={handleChange}
           required
         />
         <select
           name="gender"
-          value={signUpData.gender}
+          value={formData.gender}
           onChange={handleChange}
           required
         >
-          <option value="" disabled>Select Gender</option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
           <option value="Other">Other</option>
@@ -141,50 +190,70 @@ const SignUpPage = () => {
           type="text"
           name="mob"
           placeholder="Mobile Number"
-          value={signUpData.mob}
+          value={formData.mob}
           onChange={handleChange}
           required
         />
-        {errors.mob && <p className="error">{errors.mob}</p>}
+        <input
+          type="date"
+          name="DOB"
+          placeholder="Date of Birth"
+          value={formData.DOB}
+          onChange={handleChange}
+          required
+        />
         <input
           type="email"
           name="email"
           placeholder="Email"
-          value={signUpData.email}
+          value={formData.email}
           onChange={handleChange}
           required
         />
-        {errors.email && <p className="error">{errors.email}</p>}
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={signUpData.password}
-          onChange={handleChange}
-          required
-        />
-        {errors.password && <p className="error">{errors.password}</p>}
-        <input
-          type="password"
-          name="cnfpassword"
-          placeholder="Confirm Password"
-          value={cnfpassword}
-          onChange={handleChange}
-          required
-        />
-        {cnfpassword && cnfpassword !== signUpData.password && (
-          <p className="error">Passwords do not match</p>
+        {!otpSent && (
+          <button type="button" onClick={sendOtp} disabled={isLoading}>
+            {isLoading ? "Sending OTP..." : "Send OTP"}
+          </button>
         )}
-        <input
-          type="date"
-          name="DOB"
-          value={signUpData.DOB}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit" disabled={isButtonDisabled}>
-          Sign Up
-        </button>
+        {otpSent && !otpVerified && (
+          <>
+            <input
+              type="text"
+              name="otp"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={handleOtpChange}
+              required
+            />
+            {otpError && <p className="error">{otpError}</p>}
+            <button type="button" onClick={verifyOtp} disabled={isLoading}>
+              {isLoading ? "Verifying OTP..." : "Verify OTP"}
+            </button>
+          </>
+        )}
+        {otpVerified && (
+          <>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="password"
+              name="cnfpassword"
+              placeholder="Confirm Password"
+              value={formData.cnfpassword}
+              onChange={handleChange}
+              required
+            />
+            <button type="submit" >
+              {isLoading ? "Signing up..." : "Sign Up"}
+            </button>
+          </>
+        )}
       </form>
       <p className="login-link">
         Already have an account? <a href="/login">Login</a>
@@ -193,4 +262,4 @@ const SignUpPage = () => {
   );
 };
 
-export default SignUpPage;
+export default SignupPage;

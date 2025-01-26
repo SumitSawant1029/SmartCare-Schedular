@@ -3,7 +3,7 @@ import './AdminHomePage.css';
 import API_BASE_URL from '../config'; // Import the API base URL
 import { Link } from 'react-router-dom';
 
-const AdminHomePage = () => {
+const ManageDoctor = () => {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({
     totalAdmins: 0,
@@ -70,9 +70,9 @@ const AdminHomePage = () => {
         <h1>Welcome, Admin</h1>
         <nav>
         <Link to="/adminhomepage"><a href="/">Dashboard</a></Link>
-          <Link to="/managedoctor"><a href="/doctors">Manage Doctors</a></Link>
-          <Link to="/managepatient"><a href="/patients">Manage Patients</a></Link>
-          <Link to="/"> <a href="/logout">Logout</a></Link>
+        <Link to="/managedoctor"><a href="/doctors">Manage Doctors</a></Link>
+        <Link to="/managepatient"><a href="/patients">Manage Patients</a></Link>
+        <Link to="/"> <a href="/logout">Logout</a></Link>
         </nav>
       </header>
 
@@ -95,7 +95,8 @@ const AdminHomePage = () => {
           </div>
         </section>
 
-        {renderTable('Admin', 'Admin')}
+        {renderTable('Doctor', 'Doctor')}
+        
       </main>
 
       <footer>
@@ -105,4 +106,4 @@ const AdminHomePage = () => {
   );
 };
 
-export default AdminHomePage;
+export default ManageDoctor;

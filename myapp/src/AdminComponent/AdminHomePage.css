@@ -75,3 +75,41 @@ body {
     margin-top: 2rem;
   }
   
+  .details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .details-table th,
+  .details-table td {
+    border: 1px solid #ddd; /* Define a visible border for cells */
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .details-table th {
+    background-color: #f4f4f4; /* Light background for header cells */
+    font-weight: bold;
+  }
+  
+  .details-table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Alternating row colors for better readability */
+  }
+  
+  .details-table tr:hover {
+    background-color: #f1f1f1; /* Highlight row on hover */
+  }
+  
+  .details-table th,
+  .details-table td {
+    text-align: center; /* Center-align text in cells */
+  }
+  
+  .details-table caption {
+    caption-side: top;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  
