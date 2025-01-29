@@ -1,151 +1,147 @@
-/* Main container */
-.patient-dashboard {
+/* General Styles */
+body {
   font-family: Arial, sans-serif;
-  height: 100vh;
+  background-color: #f4f4f9;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header Styles */
+.patient-header {
+  background-color: #1d3557;
+  color: white;
+  padding: 1rem 2rem;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background-color: #f0f4f8;
 }
 
-.patient-header {
-  background-color: #4CAF50;
-  color: white;
-  padding: 15px;
-  text-align: center;
-  width: 100%;
-}
-
-.patient-header nav {
-  margin-top: 10px;
+.patient-header h1 {
+  margin: 0;
 }
 
 .patient-header nav a {
   color: white;
-  margin: 0 10px;
   text-decoration: none;
+  margin-left: 1rem;
 }
 
 .patient-header nav a:hover {
   text-decoration: underline;
 }
 
+/* Main Section Styles */
 .qa-main {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-  width: 100%;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
+.qa-main h2 {
+  color: #1d3557;
+}
+
+/* Details Section */
+.patient-details {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.patient-details h2 {
+  color: #1d3557;
+  margin-bottom: 1rem;
+}
+
+.patient-details p {
+  margin: 0.5rem 0;
+}
+
+/* Appointments Section */
+.patient-appointments {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.patient-appointments h2 {
+  color: #1d3557;
+  margin-bottom: 1rem;
+}
+
+.patient-appointments ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.patient-appointments li {
+  background-color: #f9f9f9;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* QA Section */
 .patient-disease-prediction {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.start-qa-btn {
-  background-color: #4CAF50;
+.patient-disease-prediction h3 {
+  color: #1d3557;
+}
+
+.patient-disease-prediction button {
+  background-color: #1d3557;
   color: white;
-  padding: 15px 30px;
   border: none;
+  padding: 0.5rem 1rem;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 18px;
 }
 
-.start-qa-btn:hover {
-  background-color: #45a049;
+.patient-disease-prediction button:hover {
+  background-color: #457b9d;
 }
 
-.qa-section {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
+.patient-disease-prediction .options {
+  margin-top: 1rem;
 }
 
-.question-card {
-  background-color: #ffffff;
-  padding: 30px;
-  margin: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  width: 100%;
-  max-width: 600px;
-}
-
-.options {
-  margin-top: 20px;
-}
-
-.option-btn {
-  background-color: #4CAF50;
+.patient-disease-prediction .option-btn {
+  background-color: #457b9d;
   color: white;
-  padding: 15px 30px;
   border: none;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem;
   border-radius: 5px;
   cursor: pointer;
-  margin: 10px;
-  font-size: 16px;
-  width: 100%;
-  max-width: 200px;
 }
 
-.option-btn:hover {
-  background-color: #45a049;
+.patient-disease-prediction .option-btn:hover {
+  background-color: #1d3557;
 }
 
-.finish-card {
-  background-color: #ffffff;
-  padding: 30px;
-  margin-top: 30px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  width: 100%;
-  max-width: 600px;
-}
-
-.finish-btn {
-  background-color: #4CAF50;
-  color: white;
-  padding: 15px 30px;
-  border: none;
+.patient-disease-prediction .prediction-result {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #f4f4f9;
   border-radius: 5px;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-.finish-btn:hover {
-  background-color: #45a049;
-}
-
-.loading-text {
-  font-size: 18px;
-  color: #888;
-}
-
-.prediction-result {
-  margin-top: 30px;
-  background-color: #e9f7e9;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
+/* Footer Styles */
 footer {
-  background-color: #333;
-  color: white;
   text-align: center;
-  padding: 10px;
-  margin-top: 30px;
+  padding: 1rem;
+  background-color: #1d3557;
+  color: white;
+  margin-top: 2rem;
 }

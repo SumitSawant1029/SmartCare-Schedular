@@ -8,6 +8,7 @@ var jwt = require('jsonwebtoken');
 var fetchuser = require('../middleware/fetchuser');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 
 const JWT_SECRET = 'GamingEc$mmerce';
 
@@ -69,6 +70,8 @@ router.post(
     body('email', 'Enter a valid email').isEmail(),
     body('password', 'Password must be at least 5 characters').isLength({ min: 5 }),
     body('role').optional().isIn(['Admin', 'Doctor', 'Patient']),
+    body('latitude', 'Enter a valid latitude').isFloat(),
+    body('longitude', 'Enter a valid longitude').isFloat(),
   ],
   async (req, res) => {
     let success = false;
@@ -100,6 +103,10 @@ router.post(
         password: secPass,
         role: req.body.role,
         isEmailVerified: false, // Initially set email verification to false
+        location: {
+          type: 'Point',
+          coordinates: [req.body.longitude, req.body.latitude],  // Store longitude and latitude
+        },
       });
 
       await user.save();
@@ -120,6 +127,7 @@ router.post(
     }
   }
 );
+
 
 
 // ROUTE 2: Send OTP to email using: POST "/api/auth/sendotp"
@@ -288,6 +296,70 @@ router.get("/user", async (req, res) => {
   } catch (error) {
     console.error("Error retrieving user data:", error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// ROUTE 6: Get all Doctors using: GET "/api/auth/getalldoctors". Login not required
+router.get('/getalldoctors', async (req, res) => {
+  try {
+    // Find all users with the role "Doctor"
+    const doctors = await User.find({ role: 'Doctor' }).select('-password'); // Exclude passwords for security
+
+    if (doctors.length === 0) {
+      return res.status(404).json({ success: false, message: 'No doctors found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: doctors,
+    });
+  } catch (error) {
+    console.error('Error fetching doctors:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+
+router.delete('/deleteuser/:email', async (req, res) => {
+  const userEmail = req.params.email;
+  console.log("Received delete request for Email:", userEmail);
+
+  try {
+    // Query user by email
+    const user = await User.findOne({ email: userEmail });
+    console.log("Queried User:", user);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    await User.findOneAndDelete({ email: userEmail });
+    res.json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+
+router.put('/updateuserrole', async (req, res) => {
+  const { email, newRole } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Update the user's role
+    user.role = newRole;
+    await user.save();
+
+    res.json({ success: true, message: 'User role updated successfully' });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 

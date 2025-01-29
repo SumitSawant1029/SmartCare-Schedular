@@ -33,6 +33,44 @@ const ManageDoctor = () => {
     fetchUsers();
   }, []);
 
+  // Function to delete a user
+  const deleteUser = async (userId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/auth/deleteuser/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setUsers(users.filter(user => user._id !== userId));
+      } else {
+        console.error('Failed to delete user');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+  };
+
+  // Function to update user role based on email
+  const updateUserRole = async (userEmail, newRole) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/updateuserrole", {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: userEmail, newRole }),
+      });
+
+      if (response.ok) {
+        fetchUsers(); // Refresh the user list
+      } else {
+        console.error('Failed to update user role');
+      }
+    } catch (error) {
+      console.error('Error updating user role:', error);
+    }
+  };
+
   const renderTable = (role, title) => {
     const filteredUsers = users.filter((user) => user.role === role);
     return (
@@ -46,6 +84,7 @@ const ManageDoctor = () => {
               <th>Last Name</th>
               <th>Email</th>
               <th>Mobile</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -56,6 +95,17 @@ const ManageDoctor = () => {
                 <td>{user.lastname}</td>
                 <td>{user.email}</td>
                 <td>{user.mob}</td>
+                <td>
+                  <button onClick={() => deleteUser(user._id)}>Delete</button>
+                  <select
+                    onChange={(e) => updateUserRole(user.email, e.target.value)} // Send email to update role
+                    defaultValue={user.role}
+                  >
+                    <option value="Admin">Admin</option>
+                    <option value="Doctor">Doctor</option>
+                    <option value="Patient">Patient</option>
+                  </select>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -69,13 +119,10 @@ const ManageDoctor = () => {
       <header className="admin-header">
         <h1>Welcome, Admin</h1>
         <nav>
-        <nav>
-  <Link to="/adminhomepage">Dashboard</Link>
-  <Link to="/managedoctor">Manage Doctors</Link>
-  <Link to="/managepatient">Manage Patients</Link>
-  <Link to="/logout">Logout</Link>
-</nav>
-
+          <Link to="/adminhomepage">Dashboard</Link>
+          <Link to="/managedoctor">Manage Doctors</Link>
+          <Link to="/managepatient">Manage Patients</Link>
+          <Link to="/">Logout</Link>
         </nav>
       </header>
 

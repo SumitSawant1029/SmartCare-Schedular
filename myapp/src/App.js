@@ -10,6 +10,7 @@ import AdminHomePage from "./AdminComponent/AdminHomePage";
 import DoctorHomePage from "./DoctorComponent/DoctorHomePage";
 import ManageDoctor from './AdminComponent/ManageDoctor';
 import ManagePatient from './AdminComponent/ManagePatient';
+import 'leaflet/dist/leaflet.css'; 
 
 function App() {
   return (

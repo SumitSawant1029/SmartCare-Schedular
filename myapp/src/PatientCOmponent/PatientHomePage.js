@@ -1,50 +1,93 @@
 import React, { useState, useEffect } from 'react';
 import './PatientHomePage.css';
+import API_BASE_URL from '../config';
 
 const PatientHomePage = () => {
   const [appointments, setAppointments] = useState([]);
+  const [patientDetails, setPatientDetails] = useState(null);
+  const [doctors, setDoctors] = useState([]); // State for doctors
   const [isQAActive, setIsQAActive] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [predictedDisease, setPredictedDisease] = useState(null);
   const [recommendedSpecialist, setRecommendedSpecialist] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const questions = [
-    {
-      id: 1,
-      question: 'Do you have a fever?',
-      options: ['Yes', 'No'],
-    },
-    {
-      id: 2,
-      question: 'Do you have a cough?',
-      options: ['Yes', 'No'],
-    },
-    {
-      id: 3,
-      question: 'Do you feel fatigued?',
-      options: ['Yes', 'No'],
-    },
-    {
-      id: 4,
-      question: 'Do you have a headache?',
-      options: ['Yes', 'No'],
-    },
-    // Add more questions as needed
+    { id: 1, question: 'Do you have a fever?', options: ['Yes', 'No'] },
+    { id: 2, question: 'Do you have a cough?', options: ['Yes', 'No'] },
+    { id: 3, question: 'Do you feel fatigued?', options: ['Yes', 'No'] },
+    { id: 4, question: 'Do you have a headache?', options: ['Yes', 'No'] },
   ];
 
-  useEffect(() => {
-    // Simulate fetching patient appointments from the API
-    const fetchAppointments = () => {
-      const patientAppointments = [
-        { id: 1, doctorName: 'Dr. Smith', time: '10:30 AM', status: 'Confirmed' },
-        { id: 2, doctorName: 'Dr. Jane', time: '2:00 PM', status: 'Pending' },
-      ];
-      setAppointments(patientAppointments);
-    };
+  // Fetch patient details
+  const fetchPatientDetails = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('No authentication token found');
+        return;
+      }
 
+      const response = await fetch(`${API_BASE_URL}/auth/getuserdetails`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ authtoken: token }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setPatientDetails(data.data);
+      } else {
+        setError(data.message || 'Failed to fetch patient details');
+      }
+    } catch (err) {
+      console.error('Error fetching patient details:', err);
+      setError('Error fetching patient details');
+    }
+  };
+
+  // Fetch patient appointments
+  const fetchAppointments = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/appointments/get`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setAppointments(data.appointments);
+      } else {
+        setError(data.message || 'Failed to fetch appointments');
+      }
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+      setError('Error fetching appointments');
+    }
+  };
+
+  // Fetch all doctors
+  const fetchDoctors = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/getalldoctors`);
+      const data = await response.json();
+      if (data.success) {
+        setDoctors(data.data);
+      } else {
+        setError(data.message || 'Failed to fetch doctors');
+      }
+    } catch (err) {
+      console.error('Error fetching doctors:', err);
+      setError('Error fetching doctors');
+    }
+  };
+
+  useEffect(() => {
+    fetchPatientDetails();
     fetchAppointments();
+    fetchDoctors();
   }, []);
 
   const handleAnswer = (answer) => {
@@ -56,14 +99,9 @@ const PatientHomePage = () => {
     }
   };
 
-  const handleStartQA = () => {
-    setIsQAActive(true);
-  };
-
   const handleFinishQA = () => {
     setIsQAActive(false);
     setIsLoading(true);
-    // Simulate disease prediction based on answers
     setTimeout(() => {
       const disease = getDiseasePrediction(answers);
       setPredictedDisease(disease);
@@ -73,77 +111,76 @@ const PatientHomePage = () => {
   };
 
   const getDiseasePrediction = (answers) => {
-    // Logic to predict disease based on answers
-    if (answers.includes('Yes') && answers.length === 4) {
-      return 'Flu'; // For simplicity, just predicting "Flu" if any "Yes" answer exists
+    if (answers.includes('Yes')) {
+      return 'Flu';
     }
-    return 'Cold'; // Default prediction
+    return 'Cold';
   };
 
   const getSpecialistRecommendation = (disease) => {
-    if (disease === 'Flu') {
-      return 'General Physician';
-    } else if (disease === 'Cold') {
-      return 'ENT Specialist';
-    }
-    return 'Unknown Specialist';
+    return disease === 'Flu' ? 'General Physician' : 'ENT Specialist';
   };
 
   return (
     <div className="patient-dashboard">
       <header className="patient-header">
-        <h1>Welcome, [Patient Name]</h1>
+        <h1>Welcome, {patientDetails ? patientDetails.firstname : 'Loading...'}</h1>
         <nav>
           <a href="/">Home</a>
           <a href="/appointments">My Appointments</a>
           <a href="/profile">Profile</a>
-          <a href="/logout">Logout</a>
+          <a href="/">Logout</a>
         </nav>
       </header>
 
       <main className="qa-main">
+        <section className="patient-appointments">
+          <h2>Your Appointments</h2>
+          <ul>
+            {appointments.map((appt) => (
+              <li key={appt.id}>
+                {appt.doctorName} at {appt.time} - {appt.status}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="doctor-list">
+          <h2>Available Doctors</h2>
+          <ul>
+            {doctors.map((doctor) => (
+              <li key={doctor._id}>
+                Dr. {doctor.firstname} {doctor.lastname} - {doctor.specialization || 'General'}
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <section className="patient-disease-prediction">
           {!isQAActive ? (
-            <button className="start-qa-btn" onClick={handleStartQA}>
-              Start Disease Prediction
-            </button>
+            <button onClick={() => setIsQAActive(true)}>Start Disease Prediction</button>
           ) : (
-            <div className="qa-section">
-              {questionIndex < questions.length ? (
-                <div className="question-card">
-                  <h3>{questions[questionIndex]?.question}</h3>
-                  <div className="options">
-                    {questions[questionIndex]?.options.map((option) => (
-                      <button
-                        key={option}
-                        className="option-btn"
-                        onClick={() => handleAnswer(option)}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="finish-card">
-                  <h3>Finish and Predict Disease</h3>
-                  <button className="finish-btn" onClick={handleFinishQA}>
-                    Get Prediction
-                  </button>
-                </div>
-              )}
+            <div>
+              <h3>{questions[questionIndex]?.question}</h3>
+              {questions[questionIndex]?.options.map((option) => (
+                <button key={option} onClick={() => handleAnswer(option)}>
+                  {option}
+                </button>
+              ))}
             </div>
           )}
 
-          {isLoading && <p className="loading-text">Loading your results...</p>}
+          {isLoading && <p>Loading...</p>}
 
           {predictedDisease && (
-            <div className="prediction-result">
+            <div>
               <h3>Predicted Disease: {predictedDisease}</h3>
-              <p><strong>Recommended Specialist:</strong> {recommendedSpecialist}</p>
+              <p>Recommended Specialist: {recommendedSpecialist}</p>
             </div>
           )}
         </section>
+
+        {error && <p className="error">{error}</p>}
       </main>
 
       <footer>

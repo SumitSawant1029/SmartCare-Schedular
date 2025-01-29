@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./SignupPage.css";
 
@@ -16,6 +16,8 @@ const SignupPage = () => {
     email: "",
   });
 
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -25,6 +27,23 @@ const SignupPage = () => {
   const [otpError, setOtpError] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);
 
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
+        },
+        (error) => {
+          console.error("Error getting location", error);
+          alert("Unable to retrieve your location");
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -32,7 +51,6 @@ const SignupPage = () => {
       [name]: value,
     });
 
-    // Check if passwords match and validate for spaces
     if (name === "password") {
       setIsPasswordValid(!value.includes(" "));
       setIsButtonDisabled(
@@ -129,6 +147,8 @@ const SignupPage = () => {
       ...formData,
       role: "Patient",
       date: new Date().toISOString(),
+      latitude: latitude,
+      longitude: longitude,
     };
 
     setIsLoading(true);
@@ -249,7 +269,7 @@ const SignupPage = () => {
               onChange={handleChange}
               required
             />
-            <button type="submit" >
+            <button type="submit">
               {isLoading ? "Signing up..." : "Sign Up"}
             </button>
           </>

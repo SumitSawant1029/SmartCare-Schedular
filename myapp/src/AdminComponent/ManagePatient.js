@@ -73,7 +73,7 @@ const ManagePatient = () => {
   <Link to="/adminhomepage">Dashboard</Link>
   <Link to="/managedoctor">Manage Doctors</Link>
   <Link to="/managepatient">Manage Patients</Link>
-  <Link to="/logout">Logout</Link>
+  <Link to="/">Logout</Link>
 </nav>
 
         </nav>

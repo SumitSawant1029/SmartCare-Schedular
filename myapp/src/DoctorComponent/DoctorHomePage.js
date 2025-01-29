@@ -26,7 +26,7 @@ const DoctorHomePage = () => {
           <a href="/">Home</a>
           <a href="/appointments">Appointments</a>
           <a href="/profile">Profile</a>
-          <a href="/logout">Logout</a>
+          <a href="/">Logout</a>
         </nav>
       </header>
 

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './AdminHomePage.css';
 import API_BASE_URL from '../config'; // Import the API base URL
 import { Link } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet'; // Leaflet library for handling maps
 
 const AdminHomePage = () => {
   const [users, setUsers] = useState([]);
@@ -12,6 +14,14 @@ const AdminHomePage = () => {
   });
   const [selectedUser, setSelectedUser] = useState(null); // New state for selected user
   const [error, setError] = useState(null); // New state for error handling
+
+  // Define a basic user icon for the markers
+  const userIcon = new L.Icon({
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    iconSize: [25, 41],  // size of the icon
+    iconAnchor: [12, 41], // point of the icon which will correspond to marker's location
+    popupAnchor: [1, -34], // point from which the popup should open
+  });
 
   // Fetch users from the API
   const fetchUsers = async () => {
@@ -70,46 +80,15 @@ const AdminHomePage = () => {
     fetchUserDetails(); // Fetch logged-in user details when component mounts
   }, []);
 
-  const renderTable = (role, title) => {
-    const filteredUsers = users.filter((user) => user.role === role);
-    return (
-      <section className="admin-details">
-        <h2>{title} Details</h2>
-        <table className="details-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Email</th>
-              <th>Mobile</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user._id}>
-                <td>{user._id}</td>
-                <td>{user.firstname}</td>
-                <td>{user.lastname}</td>
-                <td>{user.email}</td>
-                <td>{user.mob}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    );
-  };
-
   return (
     <div className="admin-dashboard">
       <header className="admin-header">
-        <h1>Welcome, {selectedUser ? selectedUser.firstname : 'Loading...'} !</h1> {/* Display firstname here */}
+        <h1>Welcome, {selectedUser ? selectedUser.firstname : 'Loading...'}!</h1> {/* Display firstname here */}
         <nav>
           <Link to="/adminhomepage">Dashboard</Link>
           <Link to="/managedoctor">Manage Doctors</Link>
           <Link to="/managepatient">Manage Patients</Link>
-          <Link to="/logout">Logout</Link>
+          <Link to="/">Logout</Link>
         </nav>
       </header>
 
@@ -132,21 +111,45 @@ const AdminHomePage = () => {
           </div>
         </section>
 
-        {renderTable('Admin', 'Admin')}
-
-        {selectedUser && (
-          <section className="user-details">
-            <h2>User Details</h2>
-            <p><strong>First Name:</strong> {selectedUser.firstname}</p>
-            <p><strong>Last Name:</strong> {selectedUser.lastname}</p>
-            <p><strong>Email:</strong> {selectedUser.email}</p>
-            <p><strong>Mobile:</strong> {selectedUser.mob}</p>
-            <p><strong>Role:</strong> {selectedUser.role}</p>
-            <p><strong>Email Verified:</strong> {selectedUser.isEmailVerified ? 'Yes' : 'No'}</p>
-          </section>
-        )}
-
         {error && <p className="error">{error}</p>} {/* Display error message if any */}
+
+        {/* Map section */}
+        <section className="user-map">
+          <h2>User Locations</h2>
+          <MapContainer
+            center={[20.5937, 78.9629]}  // Center on India
+            zoom={5}  // Zoom level for India
+            style={{ height: '700px', width: '100%' }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {/* Render markers for each user */}
+            {users.map((user) => {
+              // Log user data to check if the coordinates are available
+              console.log("User data:", user);
+              // Check if the coordinates exist and are valid
+              if (user.location && user.location.coordinates && user.location.coordinates.length === 2) {
+                const [longitude, latitude] = user.location.coordinates;
+                return (
+                  <Marker key={user._id} position={[latitude, longitude]} icon={userIcon}>
+                    <Popup>
+                      <strong>{user.firstname} {user.lastname}</strong>
+                      <br />
+                      {user.role}
+                      <br />
+                      {user.email}
+                    </Popup>
+                  </Marker>
+                );
+              } else {
+                console.log(`No valid coordinates for ${user.firstname}`);
+                return null;  // Don't render the marker if no valid coordinates
+              }
+            })}
+          </MapContainer>
+        </section>
       </main>
 
       <footer>
