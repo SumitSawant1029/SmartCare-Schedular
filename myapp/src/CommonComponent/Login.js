@@ -41,7 +41,7 @@ const LoginPage = () => {
         if (userRole === "Admin") {
           navigate("/adminhomepage");
         } else if (userRole === "Doctor") {
-          navigate("/doctorhomepage");
+          navigate("/docregister");
         } else if (userRole === "Patient") {
           navigate("/patienthomepage");
         } else {

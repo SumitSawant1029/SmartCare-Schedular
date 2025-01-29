@@ -177,6 +177,26 @@ router.delete('/delete/:email', fetchuser, async (req, res) => {
   }
 });
 
+router.post("/check-status", async (req, res) => {
+  try {
+    const { email } = req.body;
+    console.log(`Checking doctor status for: ${email}`);
 
+    const doctor = await Doctor.findOne({ email });
+
+    if (!doctor) {
+      return res.json({ success: false, message: false });
+    }
+
+    if (!doctor.isApproved) {
+      return res.json({ success: true, message: false });
+    }
+
+    res.json({ success: true, message:true  });
+  } catch (error) {
+    console.error("Error checking doctor status:", error);
+    res.status(500).json({ success: false, message: "Server error." });
+  }
+});
 
 module.exports = router;

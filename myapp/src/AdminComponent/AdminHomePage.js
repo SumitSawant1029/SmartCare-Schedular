@@ -26,7 +26,7 @@ const AdminHomePage = () => {
   // Fetch users from the API
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/getallusers`);
+      const response = await fetch(`${API_BASE_URL}/api/auth/getallusers`);
       const data = await response.json();
 
       // Calculate stats dynamically
@@ -51,7 +51,7 @@ const AdminHomePage = () => {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/auth/getuserdetails`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/getuserdetails`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

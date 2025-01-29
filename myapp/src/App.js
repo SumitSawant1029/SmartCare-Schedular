@@ -12,6 +12,7 @@ import ManageDoctor from './AdminComponent/ManageDoctor';
 import ManagePatient from './AdminComponent/ManagePatient';
 import 'leaflet/dist/leaflet.css'; 
 import DoctorRegistrationForm from './DoctorComponent/DoctorRegistrationForm';
+import WaitPage from './DoctorComponent/WaitPage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/managedoctor" element={<ManageDoctor/>} />
           <Route path="/managepatient" element={<ManagePatient/>} />
           <Route path="/docregister" element={<DoctorRegistrationForm/>} />
+          <Route path="/waitpage" element={<WaitPage/>} />
          
 
         </Routes>

@@ -4,18 +4,30 @@ import API_BASE_URL from '../config'; // Import the API base URL
 import { Link } from 'react-router-dom';
 
 const ManageDoctor = () => {
-  const [users, setUsers] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [pendingDoctors, setPendingDoctors] = useState([]);
   const [stats, setStats] = useState({
     totalAdmins: 0,
     totalDoctors: 0,
     totalPatients: 0,
   });
 
-  // Fetch users from the API
-  const fetchUsers = async () => {
+  // Fetch all users from the API
+  const fetchDoctors = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/getallusers`);
+      const response = await fetch(`${API_BASE_URL}/api/auth/getallusers`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`, // Add token to the request
+        },
+      });
       const data = await response.json();
+
+      // Filter doctors by approval status
+      const approvedDoctors = data.filter((user) => user.role === 'Doctor' && user.isApproved === true);
+      const pendingDoctors = data.filter((user) => user.role === 'Doctor' && user.isApproved === false);
+
+      setDoctors(approvedDoctors);
+      setPendingDoctors(pendingDoctors);
 
       // Calculate stats dynamically
       const totalAdmins = data.filter((user) => user.role === 'Admin').length;
@@ -23,59 +35,19 @@ const ManageDoctor = () => {
       const totalPatients = data.filter((user) => user.role === 'Patient').length;
 
       setStats({ totalAdmins, totalDoctors, totalPatients });
-      setUsers(data);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching doctors:', error);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchDoctors();
   }, []);
 
-  // Function to delete a user
-  const deleteUser = async (userId) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/auth/deleteuser/${userId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setUsers(users.filter(user => user._id !== userId));
-      } else {
-        console.error('Failed to delete user');
-      }
-    } catch (error) {
-      console.error('Error deleting user:', error);
-    }
-  };
-
-  // Function to update user role based on email
-  const updateUserRole = async (userEmail, newRole) => {
-    try {
-      const response = await fetch("http://localhost:5000/api/auth/updateuserrole", {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: userEmail, newRole }),
-      });
-
-      if (response.ok) {
-        fetchUsers(); // Refresh the user list
-      } else {
-        console.error('Failed to update user role');
-      }
-    } catch (error) {
-      console.error('Error updating user role:', error);
-    }
-  };
-
-  const renderTable = (role, title) => {
-    const filteredUsers = users.filter((user) => user.role === role);
+  const renderTable = (doctors, title) => {
     return (
       <section className="admin-details">
-        <h2>{title} Details</h2>
+        <h2>{title} Doctor Details</h2>
         <table className="details-table">
           <thead>
             <tr>
@@ -84,28 +56,16 @@ const ManageDoctor = () => {
               <th>Last Name</th>
               <th>Email</th>
               <th>Mobile</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user._id}>
-                <td>{user._id}</td>
-                <td>{user.firstname}</td>
-                <td>{user.lastname}</td>
-                <td>{user.email}</td>
-                <td>{user.mob}</td>
-                <td>
-                  <button onClick={() => deleteUser(user._id)}>Delete</button>
-                  <select
-                    onChange={(e) => updateUserRole(user.email, e.target.value)} // Send email to update role
-                    defaultValue={user.role}
-                  >
-                    <option value="Admin">Admin</option>
-                    <option value="Doctor">Doctor</option>
-                    <option value="Patient">Patient</option>
-                  </select>
-                </td>
+            {doctors.map((doctor) => (
+              <tr key={doctor._id}>
+                <td>{doctor._id}</td>
+                <td>{doctor.firstname}</td>
+                <td>{doctor.lastname}</td>
+                <td>{doctor.email}</td>
+                <td>{doctor.mob}</td>
               </tr>
             ))}
           </tbody>
@@ -145,8 +105,8 @@ const ManageDoctor = () => {
           </div>
         </section>
 
-        {renderTable('Doctor', 'Doctor')}
-        
+        {renderTable(pendingDoctors, 'Pending')}
+        {renderTable(doctors, 'Approved')}
       </main>
 
       <footer>
