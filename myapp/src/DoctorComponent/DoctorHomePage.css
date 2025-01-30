@@ -73,4 +73,26 @@ body {
     background-color: #0077b6;
     color: white;
   }
+
+  /* Logout Button Styles */
+.logout-button {
+  background-color: #0077b6; /* Your primary color */
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #66a3d2; /* Light red-ish on hover */
+}
+
+.logout-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.7); /* Keeps the focus effect with your primary color */
+}
+
   

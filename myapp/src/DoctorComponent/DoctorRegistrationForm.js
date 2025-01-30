@@ -24,10 +24,9 @@ function DoctorRegistrationForm() {
     async function fetchUserDetails() {
       try {
         const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
-
-        // Log the token to check if it's correctly stored
+  
         console.log("Stored Auth Token:", token);
-
+  
         const response = await fetch("http://localhost:5000/api/auth/getuserdetails", {
           method: "POST",
           headers: {
@@ -35,13 +34,14 @@ function DoctorRegistrationForm() {
           },
           body: JSON.stringify({ authtoken: token }), // Send token in the request body
         });
-
+  
         const data = await response.json();
-
+  
         if (data.success) {
           setEmail(data.data.email);
-          console.log("Email from response:", data.data.email);
-          // Check the doctor status right after setting the email
+          localStorage.setItem("email", data.data.email); // Store email in local storage
+          console.log("Email stored in local storage:", data.data.email);
+          
           checkDoctorStatus(data.data.email);
         } else {
           console.error("Error fetching user details:", data.message);
@@ -52,9 +52,10 @@ function DoctorRegistrationForm() {
         setLoading(false);
       }
     }
-
+  
     fetchUserDetails();
-  }, []); // Empty dependency array ensures this runs once when the component mounts
+  }, []);
+  
 
   const checkDoctorStatus = async (email) => {
     try {

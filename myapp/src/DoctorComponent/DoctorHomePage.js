@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './DoctorHomePage.css';
+import DoctorNavbar from './DoctorNavbar';
 
 const DoctorHomePage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -20,15 +21,7 @@ const DoctorHomePage = () => {
 
   return (
     <div className="dashboard">
-      <header className="header">
-        <h1>Welcome, Dr. [Name]</h1>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/appointments">Appointments</a>
-          <a href="/profile">Profile</a>
-          <a href="/">Logout</a>
-        </nav>
-      </header>
+      <DoctorNavbar/>
 
       <main>
         <section className="appointments">

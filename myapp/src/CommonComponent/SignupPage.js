@@ -21,11 +21,8 @@ const SignupPage = () => {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
-  const [isPasswordValid, setIsPasswordValid] = useState(true);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -50,19 +47,6 @@ const SignupPage = () => {
       ...formData,
       [name]: value,
     });
-
-    if (name === "password") {
-      setIsPasswordValid(!value.includes(" "));
-      setIsButtonDisabled(
-        formData.password !== formData.cnfpassword ||
-          !otpVerified ||
-          value.includes(" ")
-      );
-    } else if (name === "cnfpassword") {
-      setIsButtonDisabled(
-        formData.password !== value || !otpVerified || formData.password.includes(" ")
-      );
-    }
   };
 
   const handleOtpChange = (e) => {
@@ -113,7 +97,6 @@ const SignupPage = () => {
       if (result.success) {
         setOtpVerified(true);
         setOtpError("");
-        setIsButtonDisabled(false);
         alert("OTP verified successfully! You can now sign up.");
       } else {
         setOtpVerified(false);
@@ -137,7 +120,6 @@ const SignupPage = () => {
     if (!formData.DOB) newErrors.DOB = "Date of birth is required";
     if (formData.password !== formData.cnfpassword) newErrors.password = "Passwords do not match";
 
-    setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
       alert("Please fix the errors before submitting.");
       return;

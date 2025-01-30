@@ -1,0 +1,46 @@
+.appointments-container {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    justify-content: center;
+    max-width: 600px;
+    margin: 20px auto;
+  }
+  
+  .slot {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .slot:hover {
+    background: #f0f0f0;
+  }
+  
+  .selected {
+    background: #4caf50;
+    color: white;
+  }
+  
+  .save-btn {
+    padding: 10px 20px;
+    margin-top: 20px;
+    border: none;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .save-btn:hover {
+    background: #0056b3;
+  }
+  
