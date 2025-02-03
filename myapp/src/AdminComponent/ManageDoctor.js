@@ -12,31 +12,66 @@ const ManageDoctor = () => {
     totalPatients: 0,
   });
 
-  // Fetch all users from the API
+  // Fetch doctors from API
   const fetchDoctors = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/getallusers`, {
+      const response = await fetch(`${API_BASE_URL}/api/doc/getallusers/doctor`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`, // Add token to the request
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'Content-Type': 'application/json'
         },
       });
-      const data = await response.json();
 
-      // Filter doctors by approval status
-      const approvedDoctors = data.filter((user) => user.role === 'Doctor' && user.isApproved === true);
-      const pendingDoctors = data.filter((user) => user.role === 'Doctor' && user.isApproved === false);
+      if (!response.ok) {
+        throw new Error('Failed to fetch doctors');
+      }
+
+      const data = await response.json();
+      console.log('Fetched doctors:', data); // Debugging
+
+      // Filter approved and pending doctors
+      const approvedDoctors = data.filter((doctor) => doctor.isApproved === true);
+      const pendingDoctors = data.filter((doctor) => doctor.isApproved === false);
 
       setDoctors(approvedDoctors);
       setPendingDoctors(pendingDoctors);
 
-      // Calculate stats dynamically
-      const totalAdmins = data.filter((user) => user.role === 'Admin').length;
-      const totalDoctors = data.filter((user) => user.role === 'Doctor').length;
-      const totalPatients = data.filter((user) => user.role === 'Patient').length;
+      // Update stats
+      setStats({
+        totalAdmins: 0, 
+        totalDoctors: data.length,
+        totalPatients: 0
+      });
 
-      setStats({ totalAdmins, totalDoctors, totalPatients });
     } catch (error) {
       console.error('Error fetching doctors:', error);
+    }
+  };
+
+  // Approve doctor request (POST with body)
+  const approveDoctor = async (doctorId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/doc/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ doctorId }) // Sending doctorId in the body
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to approve doctor');
+      }
+
+      const result = await response.json();
+      console.log('Doctor approved:', result);
+
+      // Refresh the list after approval
+      fetchDoctors();
+
+    } catch (error) {
+      console.error('Error approving doctor:', error);
     }
   };
 
@@ -44,7 +79,7 @@ const ManageDoctor = () => {
     fetchDoctors();
   }, []);
 
-  const renderTable = (doctors, title) => {
+  const renderTable = (doctors, title, isPending = false) => {
     return (
       <section className="admin-details">
         <h2>{title} Doctor Details</h2>
@@ -52,20 +87,30 @@ const ManageDoctor = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>First Name</th>
-              <th>Last Name</th>
               <th>Email</th>
-              <th>Mobile</th>
+              <th>Specialization</th>
+              <th>Hospital</th>
+              <th>Experience</th>
+              <th>Approval Status</th>
+              {isPending && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
             {doctors.map((doctor) => (
               <tr key={doctor._id}>
                 <td>{doctor._id}</td>
-                <td>{doctor.firstname}</td>
-                <td>{doctor.lastname}</td>
                 <td>{doctor.email}</td>
-                <td>{doctor.mob}</td>
+                <td>{doctor.specialization}</td>
+                <td>{doctor.hospital}</td>
+                <td>{doctor.yearsOfExperience} years</td>
+                <td>{doctor.isApproved ? 'Approved' : 'Pending'}</td>
+                {isPending && (
+                  <td>
+                    <button onClick={() => approveDoctor(doctor._id)} className="approve-btn">
+                      Approve
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -105,7 +150,7 @@ const ManageDoctor = () => {
           </div>
         </section>
 
-        {renderTable(pendingDoctors, 'Pending')}
+        {renderTable(pendingDoctors, 'Pending', true)}
         {renderTable(doctors, 'Approved')}
       </main>
 

@@ -1,147 +1,185 @@
-/* General Styles */
-body {
-    margin: 0;
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f7fc;
-    color: #333;
-  }
-  
-  .landing-page {
-    padding: 0;
-    margin: 0;
-  }
-  
-  .hero-section {
-    background: linear-gradient(90deg, #1e90ff, #00bfff);
-    color: white;
-    text-align: center;
-    padding: 80px 20px;
-    border-bottom: 5px solid #005f9e;
-  }
-  
-  .hero-section h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-  }
-  
-  .hero-section p {
-    font-size: 1.2rem;
-    margin-bottom: 30px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .hero-section .btn-primary {
-    background-color: #005f9e;
-    color: white;
-    padding: 10px 30px;
-    text-transform: uppercase;
-    border: none;
-    border-radius: 25px;
-    font-size: 1rem;
-    cursor: pointer;
-    text-decoration: none;
-  }
-  
-  .hero-section .btn-primary:hover {
-    background-color: #004c8c;
-  }
-  
-  /* Features Section */
-  .features-section {
-    text-align: center;
-    padding: 60px 20px;
-    background-color: #fff;
-  }
-  
-  .features-section h2 {
-    font-size: 2.5rem;
-    margin-bottom: 30px;
-  }
-  
+/* Base Styles */
+.landing-page {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  overflow-x: hidden;
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 150px 20px;
+  background-color: #007bff;
+  color: white;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.hero-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-section h1 {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+}
+
+.hero-section p {
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+}
+
+.hero-section .btn-primary {
+  padding: 12px 24px;
+  background-color: white;
+  color: #007bff;
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.hero-section .btn-primary:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+/* Features Section */
+.features-section {
+  padding: 100px 20px;
+  background-color: #f8f9fa;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.features-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.features-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+}
+
+.features {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.feature-card {
+  background-color: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  width: 30%;
+  margin: 10px;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.feature-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feature-card h3 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+.feature-card p {
+  font-size: 1.1rem;
+  color: #555;
+}
+
+/* CTA Section */
+.cta-section {
+  padding: 150px 20px;
+  background-color: #007bff;
+  color: white;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.cta-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cta-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.cta-section p {
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+}
+
+.cta-section .btn-primary {
+  padding: 12px 24px;
+  background-color: white;
+  color: #007bff;
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.cta-section .btn-primary:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+/* Progress bar */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #4CAF50;
+  transform-origin: 0%;
+  z-index: 999;
+}
+
+/* Base animations */
+.hero-section, .features-section, .cta-section {
+  will-change: transform, opacity;
+}
+
+/* Feature cards */
+.feature-card {
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.feature-card:hover {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Button animations */
+.btn-primary {
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
   .features {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
+    flex-direction: column;
   }
   
   .feature-card {
-    background-color: #f8f9fa;
-    padding: 30px;
-    width: 280px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    transition: transform 0.3s;
+    width: 100%;
+    margin: 10px 0;
   }
-  
-  .feature-card h3 {
-    font-size: 1.8rem;
-    margin-bottom: 15px;
-  }
-  
-  .feature-card p {
-    font-size: 1rem;
-  }
-  
-  .feature-card:hover {
-    transform: translateY(-10px);
-  }
-  
-  .feature-card:active {
-    transform: translateY(5px);
-  }
-  
-  /* Call to Action Section */
-  .cta-section {
-    background-color: #1e90ff;
-    color: white;
-    text-align: center;
-    padding: 60px 20px;
-  }
-  
-  .cta-section h2 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-  }
-  
-  .cta-section p {
-    font-size: 1.2rem;
-    margin-bottom: 30px;
-  }
-  
-  .cta-section .btn-primary {
-    background-color: #ff6f61;
-    padding: 12px 30px;
-    border-radius: 25px;
-    font-size: 1.1rem;
-    text-decoration: none;
-  }
-  
-  .cta-section .btn-primary:hover {
-    background-color: #e65c4f;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .features {
-      flex-direction: column;
-      gap: 20px;
-    }
-  
-    .feature-card {
-      width: 100%;
-      max-width: 350px;
-    }
-  
-    .hero-section h1 {
-      font-size: 2.5rem;
-    }
-  
-    .hero-section p {
-      font-size: 1rem;
-    }
-  }
-  
+}

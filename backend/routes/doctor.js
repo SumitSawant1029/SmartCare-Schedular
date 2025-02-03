@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Doctor = require('../models/Doctor');
 const fetchuser = require('../middleware/fetchuser'); // Admin authentication middleware
+const DoctorAvailability = require('../models/DoctorAvailability');
 
 // ROUTE 1: Register a new Doctor using: POST "/api/doctor/register"
 router.post(
@@ -198,5 +199,205 @@ router.post("/check-status", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error." });
   }
 });
+
+
+// API to create or update doctor's availability
+router.post('/availability', async (req, res) => {
+  try {
+      const { doctorEmail, selectedSlots } = req.body;
+
+      if (!doctorEmail || !selectedSlots || selectedSlots.length === 0) {
+          return res.status(400).json({ message: 'Doctor email and slots are required' });
+      }
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+
+      const formattedSlots = selectedSlots.map((slot) => ({ time: slot, booked: false }));
+
+      let availability = await DoctorAvailability.findOne({ doctorEmail, 'availableSlots.date': tomorrow });
+
+      if (availability) {
+          // Update existing availability
+          await DoctorAvailability.updateOne(
+              { doctorEmail, 'availableSlots.date': tomorrow },
+              { $set: { 'availableSlots.$.slots': formattedSlots } }
+          );
+      } else {
+          // Create new availability
+          await DoctorAvailability.findOneAndUpdate(
+              { doctorEmail },
+              { $push: { availableSlots: { date: tomorrow, slots: formattedSlots } } },
+              { upsert: true, new: true }
+          );
+      }
+
+      res.status(200).json({ message: 'Availability saved successfully' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+// Fetch doctor's availability (GET)
+router.post('/availability/fetch', async (req, res) => {
+  try {
+    const { doctorEmail } = req.body;
+
+    if (!doctorEmail) {
+      return res.status(400).json({ message: 'Doctor email is required' });
+    }
+
+    const availability = await DoctorAvailability.findOne({ doctorEmail });
+
+    if (!availability) {
+      return res.status(200).json({ availableSlots: [] });
+    }
+
+    res.status(200).json({ availableSlots: availability.availableSlots });
+  } catch (error) {
+    console.error('Error fetching availability:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update or create availability (POST)
+router.post('/availability/update', async (req, res) => {
+  try {
+    const { doctorEmail, date, selectedSlots } = req.body;
+
+    if (!doctorEmail || !date || !Array.isArray(selectedSlots)) {
+      return res.status(400).json({ message: 'Doctor email, date, and valid slots array are required' });
+    }
+
+    let availability = await DoctorAvailability.findOne({ doctorEmail });
+
+    if (!availability) {
+      availability = new DoctorAvailability({ doctorEmail, availableSlots: [] });
+    }
+
+    // Check if availability for the given date already exists
+    let dateEntry = availability.availableSlots.find((entry) =>
+      entry.date.toISOString().split('T')[0] === new Date(date).toISOString().split('T')[0]
+    );
+
+    if (!dateEntry) {
+      dateEntry = { date: new Date(date), slots: [] };
+      availability.availableSlots.push(dateEntry);
+    }
+
+    // Convert selectedSlots to the correct format
+    dateEntry.slots = selectedSlots.map((time) => ({
+      time: String(time),
+      booked: false, // Newly added slots are available by default
+    }));
+
+    await availability.save();
+    res.status(200).json({ message: 'Availability updated successfully' });
+  } catch (error) {
+    console.error('Error updating availability:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+// Remove a specific slot (DELETE)
+router.post('/availability/remove', async (req, res) => {
+  try {
+    const { doctorEmail, date, slotToRemove } = req.body;
+
+    if (!doctorEmail || !date || !slotToRemove) {
+      return res.status(400).json({ message: 'Doctor email, date, and slot to remove are required' });
+    }
+
+    const availability = await DoctorAvailability.findOne({ doctorEmail });
+
+    if (!availability) {
+      return res.status(404).json({ message: 'No availability found' });
+    }
+
+    const dateEntry = availability.availableSlots.find((entry) =>
+      entry.date.toISOString().split('T')[0] === new Date(date).toISOString().split('T')[0]
+    );
+
+    if (!dateEntry) {
+      return res.status(404).json({ message: 'No available slots for this date' });
+    }
+
+    // Remove the specified slot
+    dateEntry.slots = dateEntry.slots.filter(slot => slot.time !== String(slotToRemove));
+
+    await availability.save();
+    res.status(200).json({ message: 'Slot removed successfully' });
+  } catch (error) {
+    console.error('Error removing slot:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+router.post('/availability/check', async (req, res) => {
+  try {
+    const { doctorEmail, date } = req.body;
+
+    if (!doctorEmail || !date) {
+      return res.status(400).json({ message: 'Doctor email and date are required' });
+    }
+
+    const availability = await DoctorAvailability.findOne({ doctorEmail });
+
+    if (!availability) {
+      return res.status(404).json({ message: 'No availability found' });
+    }
+
+    const dateEntry = availability.availableSlots.find((entry) =>
+      entry.date.toISOString().split('T')[0] === new Date(date).toISOString().split('T')[0]
+    );
+
+    if (!dateEntry) {
+      return res.status(404).json({ message: 'No available slots for this date' });
+    }
+
+    res.status(200).json({ availableSlots: dateEntry.slots });
+  } catch (error) {
+    console.error('Error checking availability:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/getallusers/doctor', async (req, res) => {
+  try {
+    const users = await Doctor.find().select("-password"); // Exclude passwords
+    res.json(users);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+router.post('/approve', async (req, res) => {
+  try {
+    const { doctorId } = req.body; // Extract doctor ID from body
+
+    if (!doctorId) {
+      return res.status(400).json({ message: 'Doctor ID is required' });
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    doctor.isApproved = true;
+    await doctor.save();
+
+    res.status(200).json({ message: 'Doctor approved successfully', doctor });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 
 module.exports = router;
