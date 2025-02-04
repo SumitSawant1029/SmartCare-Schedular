@@ -4,6 +4,7 @@ import API_BASE_URL from '../config'; // Import the API base URL
 import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet'; // Leaflet library for handling maps
+import AdminNavbar from './AdminNavbar';
 
 const AdminHomePage = () => {
   const [users, setUsers] = useState([]);
@@ -82,15 +83,7 @@ const AdminHomePage = () => {
 
   return (
     <div className="admin-dashboard">
-      <header className="admin-header">
-        <h1>Welcome, {selectedUser ? selectedUser.firstname : 'Loading...'}!</h1> {/* Display firstname here */}
-        <nav>
-          <Link to="/adminhomepage">Dashboard</Link>
-          <Link to="/managedoctor">Manage Doctors</Link>
-          <Link to="/managepatient">Manage Patients</Link>
-          <Link to="/">Logout</Link>
-        </nav>
-      </header>
+      <AdminNavbar/>
 
       <main>
         <section className="admin-stats">

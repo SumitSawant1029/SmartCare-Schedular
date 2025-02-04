@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './AdminHomePage.css';
 import API_BASE_URL from '../config'; // Import the API base URL
 import { Link } from 'react-router-dom';
+import AdminNavbar from './AdminNavbar';
 
 const ManagePatient = () => {
   const [users, setUsers] = useState([]);
@@ -66,18 +67,7 @@ const ManagePatient = () => {
 
   return (
     <div className="admin-dashboard">
-      <header className="admin-header">
-        <h1>Welcome, Admin</h1>
-        <nav>
-        <nav>
-  <Link to="/adminhomepage">Dashboard</Link>
-  <Link to="/managedoctor">Manage Doctors</Link>
-  <Link to="/managepatient">Manage Patients</Link>
-  <Link to="/">Logout</Link>
-</nav>
-
-        </nav>
-      </header>
+      <AdminNavbar/>
 
       <main>
         <section className="admin-stats">

@@ -400,4 +400,149 @@ router.post('/approve', async (req, res) => {
 });
 
 
+// Route 1: Initially to generate doctor appointment 
+router.post('/setAvailability', async (req, res) => {
+  const { doctorEmail } = req.body;
+
+  if (!doctorEmail) {
+    return res.status(400).json({ message: 'Doctor email is required' });
+  }
+
+  try {
+    // Check if the availability already exists
+    const existingAvailability = await DoctorAvailability.findOne({ doctorEmail });
+    if (existingAvailability) {
+      return res.status(400).json({ message: 'Availability already set for this doctor' });
+    }
+
+    // Default slots data
+    const defaultSlots = {
+      '09:00 AM': {},
+      '09:30 AM': {},
+      '10:00 AM': {},
+      '10:30 AM': {},
+      '11:00 AM': {},
+      '11:30 AM': {},
+      '12:00 PM': {},
+      '12:30 PM': {},
+      '01:00 PM': {},
+      '01:30 PM': {},
+      '02:00 PM': {},
+      '02:30 PM': {},
+      '03:00 PM': {},
+      '03:30 PM': {},
+      '04:00 PM': {},
+      '04:30 PM': {},
+      '05:00 PM': {},
+      '05:30 PM': {},
+      '06:00 PM': {},
+      '06:30 PM': {},
+    };
+
+    // Create new availability document
+    const newAvailability = new DoctorAvailability({
+      doctorEmail,
+      ...defaultSlots,
+    });
+
+    await newAvailability.save();
+    res.status(201).json({ message: 'Availability set successfully!' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ✅ Allow Slots API
+router.post('/allow-slots', async (req, res) => {
+  const { doctorEmail, slots } = req.body;
+
+  try {
+      // Check if the doctor exists in the database
+      const doctor = await DoctorAvailability.findOne({ doctorEmail });
+      if (!doctor) {
+          return res.status(404).json({ error: "Doctor not found" });
+      }
+
+      // Update the slots to allow them
+      slots.forEach(slot => {
+          if (doctor[slot] !== undefined) {
+              doctor[slot].doctorAllowed = true;
+          }
+      });
+
+      await doctor.save();
+      res.json({ message: "Slots allowed successfully" });
+
+  } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ✅ Disallow Slots API
+router.post('/disallow-slots', async (req, res) => {
+  const { doctorEmail, slots } = req.body;
+
+  try {
+      // Check if the doctor exists in the database
+      const doctor = await DoctorAvailability.findOne({ doctorEmail });
+      if (!doctor) {
+          return res.status(404).json({ error: "Doctor not found" });
+      }
+
+      // Update the slots to disallow them
+      slots.forEach(slot => {
+          if (doctor[slot] !== undefined) {
+              doctor[slot].doctorAllowed = false;
+          }
+      });
+
+      await doctor.save();
+      res.json({ message: "Slots disallowed successfully" });
+
+  } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+// ✅ Get Allowed and Not Allowed Slots API
+router.post('/get-slots', async (req, res) => {
+  const { doctorEmail } = req.body;
+
+  try {
+      // Check if the doctor exists in the database
+      const doctor = await DoctorAvailability.findOne({ doctorEmail });
+      if (!doctor) {
+          return res.status(404).json({ error: "Doctor not found" });
+      }
+
+      const allowedSlots = [];
+      const notAllowedSlots = [];
+
+      // Loop through the slots to categorize them into allowed and not allowed
+      const slots = [
+          '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+          '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
+          '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+          '06:00 PM', '06:30 PM'
+      ];
+
+      slots.forEach(slot => {
+          if (doctor[slot] && doctor[slot].doctorAllowed) {
+              allowedSlots.push(slot);
+          } else {
+              notAllowedSlots.push(slot);
+          }
+      });
+
+      res.json({ allowedSlots, notAllowedSlots });
+
+  } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
 module.exports = router;

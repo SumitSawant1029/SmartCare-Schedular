@@ -11,7 +11,7 @@ const timeSlots = [
 ];
 
 const Appointment = () => {
-  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [slotData, setSlotData] = useState({}); // Store the data with booked and doctorAllowed
   const doctorEmail = localStorage.getItem('email');
 
   const getTomorrowDate = () => {
@@ -34,8 +34,8 @@ const Appointment = () => {
         const data = await response.json();
 
         if (response.status === 200) {
-          // Set the available slots from the response
-          setSelectedSlots(data.availableSlots || []);
+          // Set the slot data with booked and doctorAllowed status
+          setSlotData(data.availableSlots || {});
         } else {
           console.error('No availability found:', data.message);
         }
@@ -47,24 +47,16 @@ const Appointment = () => {
     fetchAvailability();
   }, [doctorEmail]);
 
-  const toggleSlot = async (slot) => {
-    const newSlots = selectedSlots.includes(slot)
-      ? selectedSlots.filter((s) => s !== slot)
-      : [...selectedSlots, slot];
-
-    setSelectedSlots(newSlots); // Update local state first
-
-    try {
-      await fetch('http://localhost:5000/api/doc/availability/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doctorEmail, date: getTomorrowDate(), selectedSlots: newSlots }),
-      });
-    } catch (error) {
-      console.error('Error saving slot:', error);
-      // Rollback to the previous state in case of an error
-      setSelectedSlots(selectedSlots);
-    }
+  const toggleSlot = (slot) => {
+    setSlotData((prevState) => {
+      const newState = { ...prevState };
+      if (newState[slot]) {
+        newState[slot].doctorAllowed = !newState[slot].doctorAllowed;
+      } else {
+        newState[slot] = { booked: false, doctorAllowed: true };
+      }
+      return newState;
+    });
   };
 
   const saveAvailability = async () => {
@@ -77,7 +69,7 @@ const Appointment = () => {
       const response = await fetch('http://localhost:5000/api/doc/availability/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doctorEmail, date: getTomorrowDate(), selectedSlots }),
+        body: JSON.stringify({ doctorEmail, date: getTomorrowDate(), availableSlots: slotData }),
       });
 
       const data = await response.json();
@@ -97,10 +89,11 @@ const Appointment = () => {
           {timeSlots.map((slot) => (
             <button
               key={slot}
-              className={selectedSlots.includes(slot) ? 'slot selected' : 'slot'}
+              className={slotData[slot]?.doctorAllowed ? 'slot allowed' : 'slot not-allowed'}
               onClick={() => toggleSlot(slot)}
+              disabled={!slotData[slot]?.doctorAllowed}
             >
-              {slot}
+              {slot} - {slotData[slot]?.doctorAllowed ? 'Allowed' : 'Not Allowed'}
             </button>
           ))}
         </div>

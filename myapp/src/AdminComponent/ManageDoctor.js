@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './AdminHomePage.css';
 import API_BASE_URL from '../config'; // Import the API base URL
 import { Link } from 'react-router-dom';
+import AdminNavbar from './AdminNavbar';
 
 const ManageDoctor = () => {
   const [doctors, setDoctors] = useState([]);
@@ -38,7 +39,7 @@ const ManageDoctor = () => {
 
       // Update stats
       setStats({
-        totalAdmins: 0, 
+        totalAdmins: 0,
         totalDoctors: data.length,
         totalPatients: 0
       });
@@ -49,31 +50,68 @@ const ManageDoctor = () => {
   };
 
   // Approve doctor request (POST with body)
-  const approveDoctor = async (doctorId) => {
+  const approveDoctor = async (doctorId, doctorEmail) => {
     try {
+      console.log(`Approving doctor with ID: ${doctorId} and Email: ${doctorEmail}`); // Debug log
+
       const response = await fetch(`${API_BASE_URL}/api/doc/approve`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ doctorId }) // Sending doctorId in the body
+        body: JSON.stringify({ doctorId })
       });
 
+      // Check HTTP status
+      console.log('Approval API Response Status:', response.status);
+
+      const responseData = await response.json().catch(err => {
+        console.error('Error parsing approval response JSON:', err);
+        throw new Error('Invalid JSON response from approval API');
+      });
+
+      console.log('Approval API Response Data:', responseData);
+
       if (!response.ok) {
-        throw new Error('Failed to approve doctor');
+        throw new Error(`Failed to approve doctor: ${responseData.message || 'Unknown error'}`);
       }
 
-      const result = await response.json();
-      console.log('Doctor approved:', result);
+      // After approval, trigger the setAvailability API
+      console.log(`Setting availability for doctor email: ${doctorEmail}`);
 
-      // Refresh the list after approval
+      const availabilityResponse = await fetch(`${API_BASE_URL}/api/doc/setAvailability`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ doctorEmail })
+      });
+
+      // Check HTTP status
+      console.log('Availability API Response Status:', availabilityResponse.status);
+
+      const availabilityData = await availabilityResponse.json().catch(err => {
+        console.error('Error parsing availability response JSON:', err);
+        throw new Error('Invalid JSON response from availability API');
+      });
+
+      console.log('Availability API Response Data:', availabilityData);
+
+      if (!availabilityResponse.ok) {
+        throw new Error(`Failed to set availability: ${availabilityData.message || 'Unknown error'}`);
+      }
+
+      console.log('Doctor successfully approved and availability set');
+
+      // Refresh the doctor list
       fetchDoctors();
-
     } catch (error) {
-      console.error('Error approving doctor:', error);
+      console.error('Error approving doctor or setting availability:', error);
     }
   };
+
+
 
   useEffect(() => {
     fetchDoctors();
@@ -106,9 +144,10 @@ const ManageDoctor = () => {
                 <td>{doctor.isApproved ? 'Approved' : 'Pending'}</td>
                 {isPending && (
                   <td>
-                    <button onClick={() => approveDoctor(doctor._id)} className="approve-btn">
+                    <button onClick={() => approveDoctor(doctor._id, doctor.email)} className="approve-btn">
                       Approve
                     </button>
+
                   </td>
                 )}
               </tr>
@@ -121,15 +160,7 @@ const ManageDoctor = () => {
 
   return (
     <div className="admin-dashboard">
-      <header className="admin-header">
-        <h1>Welcome, Admin</h1>
-        <nav>
-          <Link to="/adminhomepage">Dashboard</Link>
-          <Link to="/managedoctor">Manage Doctors</Link>
-          <Link to="/managepatient">Manage Patients</Link>
-          <Link to="/">Logout</Link>
-        </nav>
-      </header>
+      <AdminNavbar />
 
       <main>
         <section className="admin-stats">
