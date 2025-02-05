@@ -1,0 +1,42 @@
+.header {
+    position: fixed; /* Fix the navbar at the top of the page */
+    top: 0; /* Keep it at the top */
+    left: 0; /* Align to the left */
+    width: 100%; /* Full width */
+    background-color: #0077B6; /* Background color */
+    color: white; /* Text color */
+    padding: 10px 20px; /* Add some padding */
+    z-index: 1000; /* Ensure it's above other content */
+  }
+  
+  nav {
+    display: flex;
+    gap: 15px;
+  }
+  
+  nav a, .logout-button {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  nav a:hover, .logout-button:hover {
+    color: #ddd;
+  }
+  
+  .logout-button {
+    background-color: #f44336; /* Red color */
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  
+  .logout-button:hover {
+    background-color: #e57373; /* Lighter red on hover */
+  }
+  
+  /* Add some padding to the main content so it doesn't get hidden behind the navbar */
+  main {
+    padding-top: 80px; /* Adjust according to the height of the navbar */
+  }
+  

@@ -1,140 +1,249 @@
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Header Styles */
-  .admin-header {
-    background-color: #1d3557;
-    color: white;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .admin-header h1 {
-    margin: 0;
-  }
-  
-  .admin-header nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 1rem;
-  }
-  
-  .admin-header nav a:hover {
-    text-decoration: underline;
-  }
-  
-  /* Stats Section */
-  .admin-stats {
-    padding: 2rem;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .admin-stats h2 {
-    color: #1d3557;
-  }
-  
-  .stats-cards {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 1rem;
-  }
-  
-  .stats-card {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 200px;
-  }
-  
-  .stats-card h3 {
-    color: #1d3557;
-    margin: 0;
-  }
-  
-  .stats-card p {
-    font-size: 2rem;
-    margin: 0.5rem 0 0 0;
-  }
-  
-  /* Footer Styles */
-  footer {
-    text-align: center;
-    padding: 1rem;
-    background-color: #1d3557;
-    color: white;
-    margin-top: 2rem;
-  }
-  
-  .details-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-  }
-  
-  .details-table th,
-  .details-table td {
-    border: 1px solid #ddd; /* Define a visible border for cells */
-    padding: 8px;
-    text-align: left;
-  }
-  
-  .details-table th {
-    background-color: #f4f4f4; /* Light background for header cells */
-    font-weight: bold;
-  }
-  
-  .details-table tr:nth-child(even) {
-    background-color: #f9f9f9; /* Alternating row colors for better readability */
-  }
-  
-  .details-table tr:hover {
-    background-color: #f1f1f1; /* Highlight row on hover */
-  }
-  
-  .details-table th,
-  .details-table td {
-    text-align: center; /* Center-align text in cells */
-  }
-  
-  .details-table caption {
-    caption-side: top;
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-  }
-  
-  .user-map {
-    margin-top: 20px;
-    padding: 20px;
-  }
-  
-  .react-leaflet-container {
-    width: 100%;
-    height: 500px; /* Ensure the height is enough for the map */
-  }
-  
-  .stats-cards {
-    display: flex;
-    justify-content: space-around;
-  }
-  
-  .stats-card {
-    padding: 20px;
-    background: #f0f0f0;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    flex: 1;
-    margin: 10px;
-  }
-  
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header Styles */
+.admin-header {
+  background-color: #1d3557;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-header h1 {
+  margin: 0;
+}
+
+.admin-header nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 1rem;
+}
+
+.admin-header nav a:hover {
+  text-decoration: underline;
+}
+
+/* Stats Section */
+.admin-stats {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.admin-stats h2 {
+  color: #1d3557;
+}
+
+.stats-cards {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+}
+
+.stats-card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 200px;
+}
+
+.stats-card h3 {
+  color: #1d3557;
+  margin: 0;
+}
+
+.stats-card p {
+  font-size: 2rem;
+  margin: 0.5rem 0 0 0;
+}
+
+/* Footer Styles */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #1d3557;
+  color: white;
+  margin-top: 2rem;
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.details-table th,
+.details-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.details-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.details-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.details-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.details-table th,
+.details-table td {
+  text-align: center;
+}
+
+.details-table caption {
+  caption-side: top;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.user-map {
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.react-leaflet-container {
+  width: 100%;
+  height: 500px;
+}
+
+.stats-cards {
+  display: flex;
+  justify-content: space-around;
+}
+
+.stats-card {
+  padding: 20px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  flex: 1;
+  margin: 10px;
+}
+
+/* AdminHomePage.css */
+.admin-dashboard {
+  font-family: Arial, sans-serif;
+}
+
+.admin-stats {
+  padding: 20px;
+}
+
+.admin-stats h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.stats-cards {
+  display: flex;
+  justify-content: space-around;
+}
+
+.stats-card {
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 200px;
+}
+
+.stats-card h3 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.stats-card p {
+  font-size: 2rem;
+  color: #007bff;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.user-map {
+  margin-top: 40px;
+}
+
+.user-map h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.reset-map-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.reset-map-button:hover {
+  background-color: #0056b3;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #f1f1f1;
+  margin-top: 40px;
+}
+
+footer p {
+  margin: 0;
+  color: #333;
+}
+
+/* Map Styling */
+.leaflet-container {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Graph Section */
+.appointment-graphs {
+  margin-top: 40px;
+  padding: 20px;
+}
+
+.graph-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; /* Add space between the graphs */
+}
+
+.graph-card {
+  width: 48%; /* Ensure each graph takes up nearly half the width */
+  box-sizing: border-box;
+}
+
+.graph-card h3 {
+  font-size: 1.6rem;
+  color: #333;
+  margin-bottom: 10px;
+}

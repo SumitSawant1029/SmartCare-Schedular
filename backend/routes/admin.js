@@ -3,7 +3,7 @@ const express = require("express");
 const Doctor = require("../models/Doctor");
 const { authAdmin } = require("./admin"); // Import admin authentication middleware
 const router = express.Router();
-
+const User = require("../models/User");
 // Get all pending doctors (doctors whose `isApproved` is false)
 router.get("/pending", async (req, res) => {
   try {
@@ -42,4 +42,28 @@ router.post("/approve", async (req, res) => {
   }
 });
 
+// Switch Patient to Admin 
+router.post('/changerole',async(req,res)=>{
+  const { email } = req.body;
+
+  try {
+   const user = await User.findOne({email}); 
+
+   if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+    if(user.role=="Patient"){
+      user.role = "Doctor";
+    }else{
+      user.role="Patient";
+    }
+
+    await user.save();
+    return res.status(200).json({ success: true, message: "Role Changed successfully" });
+  } catch (error) {
+    console.error("Error Changing role:",error);
+    return res.json({message:"Not Able to Change Role"});
+  }
+})
 module.exports = router;

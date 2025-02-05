@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './ManageDoctor.css';
+import './AdminNavbar.css';
 
 const AdminNavbar = () => {
   const navigate = useNavigate();
@@ -37,6 +37,8 @@ const AdminNavbar = () => {
   };
 
   return (
+    <>
+    <br/>
     <header className="header">
       <h1>Welcome, {doctorName || 'Loading...'}</h1> {/* Display doctor's name or loading text */}
       <nav>
@@ -46,6 +48,7 @@ const AdminNavbar = () => {
         <button onClick={handleLogout} className="logout-button">Logout</button>
       </nav>
     </header>
+    </>
   );
 };
 

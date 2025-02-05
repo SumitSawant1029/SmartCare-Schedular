@@ -34,6 +34,26 @@ const ManagePatient = () => {
     fetchUsers();
   }, []);
 
+  // Function to handle changing user role
+  const changeRole = async (email) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/adm/changerole`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(data.message);
+        fetchUsers(); // Refresh user list
+      }
+    } catch (error) {
+      console.error('Error changing role:', error);
+    }
+  };
+
   const renderTable = (role, title) => {
     const filteredUsers = users.filter((user) => user.role === role);
     return (
@@ -47,6 +67,7 @@ const ManagePatient = () => {
               <th>Last Name</th>
               <th>Email</th>
               <th>Mobile</th>
+              <th>Actions</th> {/* New column for buttons */}
             </tr>
           </thead>
           <tbody>
@@ -57,6 +78,10 @@ const ManagePatient = () => {
                 <td>{user.lastname}</td>
                 <td>{user.email}</td>
                 <td>{user.mob}</td>
+                <td>
+                  {/* Button to change role */}
+                  <button onClick={() => changeRole(user.email)}>Change Role</button>
+                </td>
               </tr>
             ))}
           </tbody>
