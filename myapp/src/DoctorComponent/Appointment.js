@@ -11,21 +11,16 @@ const timeSlots = [
 ];
 
 const Appointment = () => {
-  const [slotData, setSlotData] = useState({}); // Store the data with booked and doctorAllowed
+  const [allowedSlots, setAllowedSlots] = useState([]);
+  const [notAllowedSlots, setNotAllowedSlots] = useState([]);
   const doctorEmail = localStorage.getItem('email');
 
-  const getTomorrowDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-  };
-
   useEffect(() => {
-    const fetchAvailability = async () => {
+    const fetchSlots = async () => {
       if (!doctorEmail) return;
 
       try {
-        const response = await fetch('http://localhost:5000/api/doc/availability/fetch', {
+        const response = await fetch('http://localhost:5000/api/doc/get-slots', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ doctorEmail }),
@@ -34,49 +29,45 @@ const Appointment = () => {
         const data = await response.json();
 
         if (response.status === 200) {
-          // Set the slot data with booked and doctorAllowed status
-          setSlotData(data.availableSlots || {});
+          setAllowedSlots(data.allowedSlots || []);
+          setNotAllowedSlots(data.notAllowedSlots || []);
         } else {
-          console.error('No availability found:', data.message);
+          console.error('No slots found:', data.message);
         }
       } catch (error) {
-        console.error('Error fetching availability:', error);
+        console.error('Error fetching slots:', error);
       }
     };
 
-    fetchAvailability();
+    fetchSlots();
   }, [doctorEmail]);
 
-  const toggleSlot = (slot) => {
-    setSlotData((prevState) => {
-      const newState = { ...prevState };
-      if (newState[slot]) {
-        newState[slot].doctorAllowed = !newState[slot].doctorAllowed;
-      } else {
-        newState[slot] = { booked: false, doctorAllowed: true };
-      }
-      return newState;
-    });
-  };
-
-  const saveAvailability = async () => {
-    if (!doctorEmail) {
-      alert('Doctor email not found! Please log in again.');
-      return;
-    }
+  const toggleSlot = async (slot) => {
+    const isAllowed = allowedSlots.includes(slot);
+    const apiEndpoint = isAllowed ? 'disallow-slots' : 'allow-slots';
+    const updatedSlots = isAllowed ? allowedSlots.filter(s => s !== slot) : [...allowedSlots, slot];
 
     try {
-      const response = await fetch('http://localhost:5000/api/doc/availability/update', {
+      const response = await fetch(`http://localhost:5000/api/doc/${apiEndpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doctorEmail, date: getTomorrowDate(), availableSlots: slotData }),
+        body: JSON.stringify({ doctorEmail, slots: [slot] }),
       });
-
+      console.log("Successfull");
       const data = await response.json();
-      alert(data.message);
+
+      if (response.status === 200) {
+        // Update the slots list based on the API response
+        if (!isAllowed) {
+          setAllowedSlots(updatedSlots);
+        } else {
+          setAllowedSlots(updatedSlots);
+        }
+      } else {
+        console.error('Error toggling slot:', data.message);
+      }
     } catch (error) {
-      console.error('Error saving availability:', error);
-      alert('Failed to save availability');
+      console.error('Error toggling slot:', error);
     }
   };
 
@@ -84,20 +75,19 @@ const Appointment = () => {
     <>
       <Navbar />
       <div className="appointments-container">
-        <h1>Set Availability for Tomorrow ({getTomorrowDate()})</h1>
+        <h1>Doctor's Availability</h1>
         <div className="slots-grid">
           {timeSlots.map((slot) => (
             <button
               key={slot}
-              className={slotData[slot]?.doctorAllowed ? 'slot allowed' : 'slot not-allowed'}
+              className={allowedSlots.includes(slot) ? 'slot allowed' : 'slot not-allowed'}
+              style={{ backgroundColor: allowedSlots.includes(slot) ? 'green' : 'grey', color: 'white' }}
               onClick={() => toggleSlot(slot)}
-              disabled={!slotData[slot]?.doctorAllowed}
             >
-              {slot} - {slotData[slot]?.doctorAllowed ? 'Allowed' : 'Not Allowed'}
+              {slot}
             </button>
           ))}
         </div>
-        <button className="save-btn" onClick={saveAvailability}>Save Availability</button>
       </div>
     </>
   );

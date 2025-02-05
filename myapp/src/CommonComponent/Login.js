@@ -18,6 +18,28 @@ const LoginPage = () => {
     });
   };
 
+  const fetchUserEmail = async (authToken) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/getuserdetails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ authtoken: authToken }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        localStorage.setItem("email", result.data.email);
+        console.log("Email stored in localStorage:", result.data.email);
+      } else {
+        console.error("Failed to fetch user details:", result.message);
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -34,10 +56,12 @@ const LoginPage = () => {
       console.log(result);
       if (result.success) {
         localStorage.setItem("authToken", result.authtoken);
-        
-        // Assuming the response contains the role of the user
-        const userRole = result.role;
+
+        // Fetch and store user email
+        await fetchUserEmail(result.authtoken);
+
         // Navigate based on the role
+        const userRole = result.role;
         if (userRole === "Admin") {
           navigate("/adminhomepage");
         } else if (userRole === "Doctor") {

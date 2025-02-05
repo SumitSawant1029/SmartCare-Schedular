@@ -4,7 +4,7 @@ const { body, validationResult } = require('express-validator');
 const Doctor = require('../models/Doctor');
 const fetchuser = require('../middleware/fetchuser'); // Admin authentication middleware
 const DoctorAvailability = require('../models/DoctorAvailability');
-
+const User =require('../models/User');
 // ROUTE 1: Register a new Doctor using: POST "/api/doctor/register"
 router.post(
   '/register',
@@ -14,7 +14,6 @@ router.post(
     body('licenseNumber', 'License number is required').notEmpty(),
     body('hospital', 'Hospital is required').notEmpty(),
     body('yearsOfExperience', 'Years of experience is required').isNumeric(),
-    body('availability', 'Availability is required').isArray(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -23,7 +22,7 @@ router.post(
     }
 
     try {
-      const { email, specialization, licenseNumber, hospital, yearsOfExperience, availability, profilePicture } = req.body;
+      const { email, specialization, licenseNumber, hospital, yearsOfExperience, profilePicture } = req.body;
 
       let doctor = await Doctor.findOne({ email });
       if (doctor) {
@@ -37,7 +36,6 @@ router.post(
         licenseNumber,
         hospital,
         yearsOfExperience,
-        availability,
         profilePicture,
       });
 
@@ -369,13 +367,25 @@ router.post('/availability/check', async (req, res) => {
 
 router.get('/getallusers/doctor', async (req, res) => {
   try {
-    const users = await Doctor.find().select("-password"); // Exclude passwords
-    res.json(users);
+    // Fetch all doctors
+    const doctors = await Doctor.find().select("-password");
+
+    // For each doctor, fetch the associated user details based on the email
+    const doctorsWithUserDetails = await Promise.all(doctors.map(async (doctor) => {
+      const user = await User.findOne({ email: doctor.email }).select('firstname lastname gender mob DOB email role isEmailVerified location');
+      return {
+        ...doctor.toObject(),
+        userDetails: user
+      };
+    }));
+
+    res.json(doctorsWithUserDetails);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 router.post('/approve', async (req, res) => {
   try {

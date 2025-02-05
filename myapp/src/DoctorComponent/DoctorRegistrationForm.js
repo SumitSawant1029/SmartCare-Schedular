@@ -139,6 +139,12 @@ function DoctorRegistrationForm() {
 
   return (
     <div className="doctor-registration-container">
+      <header className="header">
+      <h1>Welcome</h1> {/* Display doctor's name or loading text */}
+      <nav>
+        <button o className="logout-button">Logout</button>
+      </nav>
+    </header>
       <div className="doctor-registration-card">
         <div className="doctor-registration-content">
           <h2 className="doctor-registration-title">Doctor Registration</h2>
@@ -151,34 +157,6 @@ function DoctorRegistrationForm() {
             onChange={handleChange}
             className="doctor-registration-input"
           />
-
-          {/* Availability Input */}
-          {step === steps.length - 1 && (
-            <div className="availability-section">
-              <h3>Enter Availability</h3>
-              <input
-                type="text"
-                placeholder="Day (e.g., Monday)"
-                value={day}
-                onChange={(e) => setDay(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Time (e.g., 9:00 AM - 5:00 PM)"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-              />
-              <button type="button" onClick={handleAddAvailability}>
-                Add Availability
-              </button>
-
-              <ul>
-                {availability.map((slot, index) => (
-                  <li key={index}>{`${slot.day}: ${slot.time}`}</li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           {/* Profile Picture Upload */}
           {step === steps.length - 1 && (

@@ -24,13 +24,9 @@ const DoctorSchema = new mongoose.Schema(
       type: Number,
       required: true, // The number of years the doctor has been practicing
     },
-    availability: {
-      type: Array, // Array of available days/times (e.g., [{ day: 'Monday', time: '9:00 AM - 5:00 PM' }])
-      required: true,
-    },
     profilePicture: {
       type: String, // URL or path to the doctor's profile picture
-      default: 'default.jpg', // Default image if none is provided
+      default: 'https://cdn-icons-png.flaticon.com/512/3774/3774299.png', // Default image if none is provided
     },
     isApproved: {
       type: Boolean,

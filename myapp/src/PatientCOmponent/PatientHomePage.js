@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './PatientHomePage.css';
 import API_BASE_URL from '../config';
+import PatientNavbar from './PatientNavbar';
 
 const PatientHomePage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -69,26 +70,9 @@ const PatientHomePage = () => {
   };
 
   // Fetch all doctors
-  const fetchDoctors = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/getalldoctors`);
-      const data = await response.json();
-      if (data.success) {
-        setDoctors(data.data);
-      } else {
-        setError(data.message || 'Failed to fetch doctors');
-      }
-    } catch (err) {
-      console.error('Error fetching doctors:', err);
-      setError('Error fetching doctors');
-    }
-  };
+  
 
-  useEffect(() => {
-    fetchPatientDetails();
-    fetchAppointments();
-    fetchDoctors();
-  }, []);
+  
 
   const handleAnswer = (answer) => {
     setAnswers([...answers, answer]);
@@ -123,15 +107,7 @@ const PatientHomePage = () => {
 
   return (
     <div className="patient-dashboard">
-      <header className="patient-header">
-        <h1>Welcome, {patientDetails ? patientDetails.firstname : 'Loading...'}</h1>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/appointments">My Appointments</a>
-          <a href="/profile">Profile</a>
-          <a href="/">Logout</a>
-        </nav>
-      </header>
+      <PatientNavbar/>
 
       <main className="qa-main">
         <section className="patient-appointments">
@@ -145,16 +121,7 @@ const PatientHomePage = () => {
           </ul>
         </section>
 
-        <section className="doctor-list">
-          <h2>Available Doctors</h2>
-          <ul>
-            {doctors.map((doctor) => (
-              <li key={doctor._id}>
-                Dr. {doctor.firstname} {doctor.lastname} - {doctor.specialization || 'General'}
-              </li>
-            ))}
-          </ul>
-        </section>
+       
 
         <section className="patient-disease-prediction">
           {!isQAActive ? (
@@ -180,7 +147,6 @@ const PatientHomePage = () => {
           )}
         </section>
 
-        {error && <p className="error">{error}</p>}
       </main>
 
       <footer>

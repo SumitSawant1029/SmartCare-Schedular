@@ -16,6 +16,7 @@ import WaitPage from './DoctorComponent/WaitPage';
 import Appointment from './DoctorComponent/Appointment';
 import DoctorNavbar from './DoctorComponent/DoctorNavbar';
 import DoctorProfile from './DoctorComponent/DoctorProfile';
+import BookAppointments from './PatientCOmponent/BookAppointments';
 
 function App() {
   return (
@@ -35,6 +36,8 @@ function App() {
           <Route path="/appointments" element={<Appointment/>} />
          <Route path="/doctornavbar" element={<DoctorNavbar/>} />
          <Route path="/doctorprofile" element={<DoctorProfile/>} />
+         <Route path="/bookappointments" element={<BookAppointments/>} />
+
 
 
         </Routes>
