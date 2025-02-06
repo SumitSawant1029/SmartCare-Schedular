@@ -53,6 +53,9 @@ const BookAppointments = () => {
   return (
     <>
       <PatientNavbar />
+      <br/>
+      <br/>
+      <br/>
       <div className="container mt-4">
         <div className="row mb-4">
           <div className="col-md-6 offset-md-3">
@@ -86,13 +89,12 @@ const BookAppointments = () => {
                     </h5>
                     <p className="card-text">
                       <strong>Specialization:</strong> {doctor.specialization}
-                    </p>
-                    <p className="card-text">
+                      <br/>
                       <strong>Hospital:</strong> {doctor.hospital}
-                    </p>
-                    <p className="card-text">
+                      <br/>
                       <strong>Years of Experience:</strong> {doctor.yearsOfExperience}
                     </p>
+                   
                     <button className="btn btn-primary">Book Appointment</button>
                   </div>
                 </div>

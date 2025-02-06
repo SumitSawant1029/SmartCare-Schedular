@@ -108,7 +108,9 @@ const PatientHomePage = () => {
   return (
     <div className="patient-dashboard">
       <PatientNavbar/>
-
+      <br/>
+      <br/>
+      <br/>
       <main className="qa-main">
         <section className="patient-appointments">
           <h2>Your Appointments</h2>

@@ -5,16 +5,15 @@
   
   .fixed-card {
     width: 18rem; /* Fixed card width */
-    height: 29rem; /* Fixed card height */
+    height: 33rem; /* Fixed card height */
   }
   
-  .card-img-top {
-    height: 250px; /* Set a fixed height for the image */
+  .card-img-top { /* Set a fixed height for the image */
     object-fit: cover; /* Ensures image is cropped to fit the dimensions */
   }
   
   .card-body {
     height: calc(100% - 150px); /* Ensures that the body occupies the remaining space */
-    overflow-y: auto; /* If content overflows, enable scrolling */
+    overflow-y: auto;
   }
   
