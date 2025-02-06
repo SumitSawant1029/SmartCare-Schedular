@@ -1,10 +1,12 @@
-/* Footer Styles */
 .footer {
-    background-color: #333;
-    color: white;
-    padding: 20px 0;
-    text-align: center;
-  }
+  background-image: url('https://mars-metcdn-com.global.ssl.fastly.net/content/uploads/sites/101/2019/04/30174046/footer-background.png'); /* Replace with your image path */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white; /* Adjust text color for better visibility */
+  padding: 20px;
+  text-align: center;
+}
   
   .footer-content {
     max-width: 1200px;

@@ -1,31 +1,132 @@
 /* Navbar Styles */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #333;
-    padding: 15px 30px;
-    color: white;
-  }
-  
-  .navbar-logo h2 {
-    margin: 0;
-    font-size: 1.8rem;
-  }
-  
-  .navbar-links {
-    list-style-type: none;
-    display: flex;
-    gap: 20px;
-  }
-  
-  .navbar-link {
-    text-decoration: none;
-    color: white;
-    font-size: 1.1rem;
-  }
-  
-  .navbar-link:hover {
-    text-decoration: underline;
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #E1EEFF; /* Default color */
+  padding: 15px 30px;
+  color: black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000; /* Ensures navbar stays above other elements */
+  transition: background-color 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+/* Navbar changes color when scrolling */
+.navbar-scrolled {
+  background-color: #0056b3; /* New color when scrolling */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 10px 30px; /* Reduce padding when scrolling */
+}
+
+/* Ensure content doesn't overlap */
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent content from being hidden behind the navbar */
+.main-content {
+  padding-top: 80px; /* Adjust based on navbar height */
+}
+
+/* Logo Styling */
+.navbar-logo img {
+  width: 28%;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Reduce logo size when scrolling */
+.navbar-scrolled .navbar-logo img {
+  width: 22%; /* Adjust as needed */
+}
+
+/* Centered Navbar Links */
+.navbar-links {
+  list-style-type: none;
+  display: flex;
+  flex-grow: 1;
+  justify-content: center; /* Center links */
+  gap: 20px;
+  padding: 0;
+}
+
+.navbar-link {
+  text-decoration: none;
+  color: black;
+  font-size: 1.1rem;
+  transition: color 0.3s ease-in-out;
+}
+
+.navbar-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Navbar Links Change Color on Scroll */
+.navbar-scrolled .navbar-link {
+  color: white;
+}
+
+/* Login & Sign Up Buttons on the Right */
+.navbar-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+/* Style for Log in button */
+.navbar-button {
+  text-decoration: none;
+  background-color: #E1EEFF;
+  color: #0056b3;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.navbar-button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+/* Style for Sign Up button */
+.navbar-button1 {
+  text-decoration: none;
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s ease-in-out;
+}
+
+.navbar-button1:hover {
+  background-color: #0056b3;
+}
+
+/* Change button styles when scrolling */
+.navbar-scrolled .navbar-button {
+  background-color: white;
+  color: #007bff;
+  border-color: white;
+}
+
+.navbar-scrolled .navbar-button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+.navbar-scrolled .navbar-button1 {
+  background-color: white;
+  color: #007bff;
+}
+
+.navbar-scrolled .navbar-button1:hover {
+  background-color: #0056b3;
+  color: white;
+}
