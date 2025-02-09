@@ -1,0 +1,54 @@
+/* PatientNavbar.css */
+
+/* Navbar Container */
+.header {
+    background-color: #1d3557;  /* Rich navy blue */
+    color: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Welcome Message */
+  .header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  
+  /* Navigation Links */
+  .header nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+  
+  .header nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+  
+  .header nav a:hover {
+    color: #a8dadc; /* Light blue accent on hover */
+  }
+  
+  /* Logout Button */
+  .logout-button {
+    background-color: #e63946;  /* Vibrant red for logout */
+    border: none;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .logout-button:hover {
+    background-color: #d62828;
+  }
+  

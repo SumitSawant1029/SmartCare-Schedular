@@ -1,0 +1,86 @@
+{
+    "question": "Do you have abnormal appearing skin?",
+    "yes": {
+      "question": "Do you have nausea?",
+      "yes": { "specialization": "Toxicologist" },
+      "no": {
+        "question": "Do you have itchiness of eye?",
+        "yes": {
+          "question": "Do you have fluid retention?",
+          "yes": { "specialization": "Allergist/Immunologist" },
+          "no": {
+            "question": "Do you have itching of skin?",
+            "yes": { "specialization": "Allergist/Immunologist" },
+            "no": { "specialization": "Ophthalmologist" }
+          }
+        },
+        "no": {
+          "question": "Do you have arm swelling?",
+          "yes": {
+            "question": "Do you have leg cramps or spasms?",
+            "yes": { "specialization": "Hematologist" },
+            "no": { "specialization": "Toxicologist" }
+          },
+          "no": {
+            "question": "Do you have eye redness?",
+            "yes": { "specialization": "Ophthalmologist" },
+            "no": { "specialization": "Dermatologist" }
+          }
+        }
+      }
+    },
+    "no": {
+      "question": "Do you have pain in the eye?",
+      "yes": {
+        "question": "Do you have facial pain?",
+        "yes": {
+          "question": "Do you have lip swelling?",
+          "yes": { "specialization": "Oral and Maxillofacial Surgeon" },
+          "no": {
+            "question": "Do you have diminished hearing?",
+            "yes": { "specialization": "Dentist/Oral Surgeon" },
+            "no": { "specialization": "Pulmonologist/Rheumatologist" }
+          }
+        },
+        "no": {
+          "question": "Do you abuse alcohol?",
+          "yes": { "specialization": "Oral and Maxillofacial Surgeon" },
+          "no": {
+            "question": "Do you have difficulty swallowing?",
+            "yes": { "specialization": "Rheumatologist" },
+            "no": { "specialization": "Ophthalmologist" }
+          }
+        }
+      },
+      "no": {
+        "question": "Do you have depression?",
+        "yes": {
+          "question": "Do you have vomiting?",
+          "yes": {
+            "question": "Do you have rectal bleeding?",
+            "yes": { "specialization": "Hepatologist" },
+            "no": { "specialization": "Toxicologist" }
+          },
+          "no": {
+            "question": "Do you have smoking problems?",
+            "yes": { "specialization": "Addiction Specialist" },
+            "no": { "specialization": "Psychiatrist" }
+          }
+        },
+        "no": {
+          "question": "Do you have ear pain?",
+          "yes": {
+            "question": "Do you have peripheral edema?",
+            "yes": { "specialization": "Dentist" },
+            "no": { "specialization": "Otolaryngologist (ENT)" }
+          },
+          "no": {
+            "question": "Do you have burning abdominal pain?",
+            "yes": { "specialization": "Gastroenterologist" },
+            "no": { "specialization": "Orthopedic Surgeon" }
+          }
+        }
+      }
+    }
+  }
+  

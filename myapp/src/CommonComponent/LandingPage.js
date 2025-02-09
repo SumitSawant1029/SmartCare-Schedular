@@ -8,6 +8,7 @@ import clock from '../Asset/clock.png';
 import location from '../Asset/location.png';
 import aibase from "../Asset/aibase.png";
 import appointment from "../Asset/appointment.png";
+import whychooseus from "../Asset/whychooseus.png";
 const LandingPage = () => {
   
 
@@ -63,10 +64,31 @@ const LandingPage = () => {
   </div>
 </div>
 
-      <div className="">
-        <a>Why Choose Us?</a>
-
+<div className="why-choose-us">
+      {/* Text Content */}
+      <div className="content">
+        <h2>Why Choose Us?</h2>
+        <p>
+          SmartCare Scheduler offers <strong>AI-powered</strong> doctor recommendations, 
+          <strong> real-time</strong> appointment booking, and <strong>seamless</strong> healthcare management. 
+          Get <strong>faster diagnoses</strong> and <strong>better scheduling</strong> for an improved healthcare experience.
+        </p>
       </div>
+
+      {/* Image on the Right */}
+      <div className="image-container">
+        <img src={whychooseus} alt="Why Choose Us" />
+      </div>
+    </div>
+    <div className="stats">
+  <h2>Our Impact</h2>
+  <div className="stat-card">
+    <h3>🩺 500+ Doctors</h3>
+    <h3>✅ 10,000+ Appointments Booked</h3>
+    <h3>😊 98% Patient Satisfaction</h3>
+  </div>
+</div>
+
       <Footer />
     </>
   );

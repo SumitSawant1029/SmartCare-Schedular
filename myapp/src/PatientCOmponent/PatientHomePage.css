@@ -1,147 +1,151 @@
-/* General Styles */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f9;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body, html {
   margin: 0;
   padding: 0;
+  font-family: 'Roboto', sans-serif;
 }
 
-/* Header Styles */
-.patient-header {
-  background-color: #1d3557;
-  color: white;
-  padding: 1rem 2rem;
+.patient-dashboard {
+  background: linear-gradient(135deg, #2c3e50, #4ca1af);
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  color: #333;
 }
 
-.patient-header h1 {
-  margin: 0;
+/* Main Content */
+.main-content {
+  width: 90%;
+  max-width: 1200px;
+  margin: 40px auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 20px;
 }
 
-.patient-header nav a {
-  color: white;
-  text-decoration: none;
-  margin-left: 1rem;
+/* Card Styles */
+.card {
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.patient-header nav a:hover {
-  text-decoration: underline;
-}
-
-/* Main Section Styles */
-.qa-main {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.qa-main h2 {
-  color: #1d3557;
-}
-
-/* Details Section */
-.patient-details {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.patient-details h2 {
-  color: #1d3557;
-  margin-bottom: 1rem;
-}
-
-.patient-details p {
-  margin: 0.5rem 0;
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 /* Appointments Section */
-.patient-appointments {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.appointments-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  color: #2c3e50;
 }
 
-.patient-appointments h2 {
-  color: #1d3557;
-  margin-bottom: 1rem;
-}
-
-.patient-appointments ul {
-  list-style-type: none;
+.appointments-section ul {
+  list-style: none;
   padding: 0;
 }
 
-.patient-appointments li {
-  background-color: #f9f9f9;
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.appointments-section li {
+  padding: 10px 15px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 1rem;
+  color: #555;
 }
 
-/* QA Section */
-.patient-disease-prediction {
-  padding: 1.5rem;
-  background-color: white;
+/* Symptom Checker Section */
+.disease-prediction-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.start-diagnosis {
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* Button Styles */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #2980b9;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #1c5980;
+}
+
+.btn-success {
+  background-color: #27ae60;
+  color: #fff;
+}
+
+.btn-success:hover {
+  background-color: #1e874b;
+}
+
+.btn-danger {
+  background-color: #c0392b;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #962d22;
+}
+
+/* Question Container */
+.question-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.question-container h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.options {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* Result Container */
+.result-container {
+  margin-top: 20px;
+  text-align: center;
+  padding: 15px;
+  background-color: #ecf0f1;
   border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 1.2rem;
+  color: #2c3e50;
 }
 
-.patient-disease-prediction h3 {
-  color: #1d3557;
-}
-
-.patient-disease-prediction button {
-  background-color: #1d3557;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.patient-disease-prediction button:hover {
-  background-color: #457b9d;
-}
-
-.patient-disease-prediction .options {
-  margin-top: 1rem;
-}
-
-.patient-disease-prediction .option-btn {
-  background-color: #457b9d;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  margin: 0.5rem;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.patient-disease-prediction .option-btn:hover {
-  background-color: #1d3557;
-}
-
-.patient-disease-prediction .prediction-result {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background-color: #f4f4f9;
-  border-radius: 5px;
-  text-align: center;
-}
-
-/* Footer Styles */
+/* Footer */
 footer {
+  width: 100%;
+  background-color: #2c3e50;
+  color: #fff;
   text-align: center;
-  padding: 1rem;
-  background-color: #1d3557;
-  color: white;
-  margin-top: 2rem;
+  padding: 15px 0;
+  margin-top: auto;
 }

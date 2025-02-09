@@ -2,8 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DoctorRegistrationForm.css";
 
+const specializations = [
+  "Cardiologist", "Dermatologist", "Neurologist", "Orthopedic", "Pediatrician", "Psychiatrist", "Surgeon"
+];
+
 const steps = [
-  { key: "specialization", label: "Enter your Specialization", type: "text" },
+  { key: "specialization", label: "Select your Specialization", type: "dropdown" },
   { key: "licenseNumber", label: "Enter your License Number", type: "text" },
   { key: "hospital", label: "Enter your Hospital Name", type: "text" },
   { key: "yearsOfExperience", label: "Enter your Years of Experience", type: "number" },
@@ -14,125 +18,64 @@ function DoctorRegistrationForm() {
   const [formData, setFormData] = useState({});
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
-  const [availability, setAvailability] = useState([]);
-  const [day, setDay] = useState("");
-  const [time, setTime] = useState("");
   const [profilePicture, setProfilePicture] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchUserDetails() {
       try {
-        const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
-  
-        console.log("Stored Auth Token:", token);
-  
+        const token = localStorage.getItem("authToken");
         const response = await fetch("http://localhost:5000/api/auth/getuserdetails", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ authtoken: token }), // Send token in the request body
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ authtoken: token }),
         });
-  
+
         const data = await response.json();
-  
         if (data.success) {
           setEmail(data.data.email);
-          localStorage.setItem("email", data.data.email); // Store email in local storage
-          console.log("Email stored in local storage:", data.data.email);
-          
           checkDoctorStatus(data.data.email);
         } else {
-          console.error("Error fetching user details:", data.message);
           setLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching user details:", error);
         setLoading(false);
       }
     }
-  
     fetchUserDetails();
   }, []);
-  
 
   const checkDoctorStatus = async (email) => {
     try {
       const response = await fetch("http://localhost:5000/api/doc/check-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email }),
+        body: JSON.stringify({ email }),
       });
-
       const data = await response.json();
       setLoading(false);
-
-      if (data.success && data.message === false) {
-        // If the account is being verified, show the verification message
-        navigate("/waitpage");
-      } else if (data.success && data.message === true) {
-        // If both are true, navigate to the dashboard
-        navigate("/doctorhomepage");
-      } else {
-        // If the success is false, show the form
-        setStep(0); // Reset the step to show the form
-      }
+      if (data.success && data.message === false) navigate("/waitpage");
+      else if (data.success && data.message === true) navigate("/doctorhomepage");
     } catch (error) {
-      console.error("Error checking doctor status:", error);
       setLoading(false);
-    }
-  };
-
-  const handleNext = () => {
-    if (step < steps.length - 1) {
-      setStep(step + 1);
-    } else {
-      submitForm();
     }
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [steps[step].key]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAddAvailability = () => {
-    if (day && time) {
-      setAvailability([...availability, { day, time }]);
-      setDay("");
-      setTime("");
-    }
+  const handleNext = () => {
+    setStep(step + 1);
   };
 
-  const handleProfilePictureChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfilePicture(URL.createObjectURL(file));
-    }
+  const handleBack = () => {
+    setStep(step - 1);
   };
 
-  const submitForm = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/doc/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          ...formData,
-          availability,
-          profilePicture,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        alert("Your details have been submitted. Await admin approval.");
-      } else {
-        alert(data.message);
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
+  const handleSubmit = () => {
+    setSubmitted(true);
   };
 
   if (loading) return <p>Loading...</p>;
@@ -140,36 +83,59 @@ function DoctorRegistrationForm() {
   return (
     <div className="doctor-registration-container">
       <header className="header">
-      <h1>Welcome</h1> {/* Display doctor's name or loading text */}
-      <nav>
-        <button o className="logout-button">Logout</button>
-      </nav>
-    </header>
+        <h1>Welcome</h1>
+        <nav>
+          <button onClick={() => navigate("/")} className="logout-button">Logout</button>
+        </nav>
+      </header>
       <div className="doctor-registration-card">
         <div className="doctor-registration-content">
           <h2 className="doctor-registration-title">Doctor Registration</h2>
-
-          {/* Step-based Input Fields */}
-          <input
-            type={steps[step].type}
-            placeholder={steps[step].label}
-            value={formData[steps[step].key] || ""}
-            onChange={handleChange}
-            className="doctor-registration-input"
-          />
-
-          {/* Profile Picture Upload */}
-          {step === steps.length - 1 && (
-            <div className="profile-picture-section">
-              <h3>Upload Profile Picture</h3>
-              <input type="file" accept="image/*" onChange={handleProfilePictureChange} />
-              {profilePicture && <img src={profilePicture} alt="Profile Preview" width="100" />}
-            </div>
+          {submitted ? (
+            <p>Successfully Submitted! Your submission is under review. You will shortly receive an email if your submission is valid and approved. Thank you for your patience.</p>
+          ) : (
+            <>
+              {steps[step] && (
+                steps[step].type === "dropdown" ? (
+                  <select
+                    name={steps[step].key}
+                    value={formData[steps[step].key] || ""}
+                    onChange={handleChange}
+                    className="doctor-registration-input"
+                  >
+                    <option value="">Select Specialization</option>
+                    {specializations.map((spec) => (
+                      <option key={spec} value={spec}>{spec}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type={steps[step].type}
+                    name={steps[step].key}
+                    placeholder={steps[step].label}
+                    value={formData[steps[step].key] || ""}
+                    onChange={handleChange}
+                    className="doctor-registration-input"
+                  />
+                )
+              )}
+              {step === steps.length && (
+                <div className="profile-picture-section">
+                  <h3>Upload Profile Picture</h3>
+                  <input type="file" accept="image/*" onChange={(e) => setProfilePicture(URL.createObjectURL(e.target.files[0]))} />
+                  {profilePicture && <img src={profilePicture} alt="Profile Preview" width="100" />}
+                </div>
+              )}
+              <div className="button-group">
+                {step > 0 && <button onClick={handleBack} className="back-button">Back</button>}
+                {step < steps.length ? (
+                  <button onClick={handleNext} className="next-button">Next</button>
+                ) : (
+                  <button onClick={handleSubmit} className="submit-button">Submit</button>
+                )}
+              </div>
+            </>
           )}
-
-          <button onClick={handleNext} className="doctor-registration-button">
-            {step === steps.length - 1 ? "Submit" : "Next"}
-          </button>
         </div>
       </div>
     </div>

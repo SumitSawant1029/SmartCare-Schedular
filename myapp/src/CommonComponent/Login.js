@@ -103,7 +103,10 @@ const LoginPage = () => {
         <button type="submit">Login</button>
       </form>
       <p className="signup-link">
-        Don't have an account? <a href="/signup">Sign Up</a>
+        Don't have an account Patient? <a href="/signup">Sign Up</a>
+      </p>
+      <p className="signup-link">
+        Don't have an account Doctor ? <a href="/doctorsignup">Sign Up</a>
       </p>
     </div>
   );

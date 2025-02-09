@@ -1,154 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './PatientHomePage.css';
-import API_BASE_URL from '../config';
 import PatientNavbar from './PatientNavbar';
+import decisionTree from '../Asset/decisionTree.json';
 
 const PatientHomePage = () => {
-  const [appointments, setAppointments] = useState([]);
-  const [patientDetails, setPatientDetails] = useState(null);
-  const [doctors, setDoctors] = useState([]); // State for doctors
   const [isQAActive, setIsQAActive] = useState(false);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [predictedDisease, setPredictedDisease] = useState(null);
+  const [currentNode, setCurrentNode] = useState(decisionTree);
   const [recommendedSpecialist, setRecommendedSpecialist] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const questions = [
-    { id: 1, question: 'Do you have a fever?', options: ['Yes', 'No'] },
-    { id: 2, question: 'Do you have a cough?', options: ['Yes', 'No'] },
-    { id: 3, question: 'Do you feel fatigued?', options: ['Yes', 'No'] },
-    { id: 4, question: 'Do you have a headache?', options: ['Yes', 'No'] },
-  ];
-
-  // Fetch patient details
-  const fetchPatientDetails = async () => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setError('No authentication token found');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/auth/getuserdetails`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authtoken: token }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setPatientDetails(data.data);
-      } else {
-        setError(data.message || 'Failed to fetch patient details');
-      }
-    } catch (err) {
-      console.error('Error fetching patient details:', err);
-      setError('Error fetching patient details');
-    }
-  };
-
-  // Fetch patient appointments
-  const fetchAppointments = async () => {
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/appointments/get`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setAppointments(data.appointments);
-      } else {
-        setError(data.message || 'Failed to fetch appointments');
-      }
-    } catch (err) {
-      console.error('Error fetching appointments:', err);
-      setError('Error fetching appointments');
-    }
-  };
-
-  // Fetch all doctors
-  
-
-  
-
+  // Handle user's answer
   const handleAnswer = (answer) => {
-    setAnswers([...answers, answer]);
-    if (questionIndex < questions.length - 1) {
-      setQuestionIndex(questionIndex + 1);
-    } else {
-      handleFinishQA();
+    if (currentNode[answer.toLowerCase()]) {
+      const nextNode = currentNode[answer.toLowerCase()];
+      if (nextNode.specialization) {
+        setRecommendedSpecialist(nextNode.specialization);
+        setIsQAActive(false);
+      } else {
+        setCurrentNode(nextNode);
+      }
     }
-  };
-
-  const handleFinishQA = () => {
-    setIsQAActive(false);
-    setIsLoading(true);
-    setTimeout(() => {
-      const disease = getDiseasePrediction(answers);
-      setPredictedDisease(disease);
-      setRecommendedSpecialist(getSpecialistRecommendation(disease));
-      setIsLoading(false);
-    }, 2000);
-  };
-
-  const getDiseasePrediction = (answers) => {
-    if (answers.includes('Yes')) {
-      return 'Flu';
-    }
-    return 'Cold';
-  };
-
-  const getSpecialistRecommendation = (disease) => {
-    return disease === 'Flu' ? 'General Physician' : 'ENT Specialist';
   };
 
   return (
     <div className="patient-dashboard">
-      <PatientNavbar/>
-      <br/>
-      <br/>
-      <br/>
-      <main className="qa-main">
-        <section className="patient-appointments">
+      <PatientNavbar />
+      <main className="main-content">
+        <section className="appointments-section card">
           <h2>Your Appointments</h2>
           <ul>
-            {appointments.map((appt) => (
-              <li key={appt.id}>
-                {appt.doctorName} at {appt.time} - {appt.status}
-              </li>
-            ))}
+            {/* Render appointments here */}
+            <li>No appointments scheduled</li>
           </ul>
         </section>
 
-       
-
-        <section className="patient-disease-prediction">
+        <section className="disease-prediction-section card">
           {!isQAActive ? (
-            <button onClick={() => setIsQAActive(true)}>Start Disease Prediction</button>
+            <div className="start-diagnosis">
+              <button
+                onClick={() => {
+                  setIsQAActive(true);
+                  setCurrentNode(decisionTree);
+                  setRecommendedSpecialist(null);
+                }}
+                className="btn btn-primary"
+              >
+                Start Symptom Checker
+              </button>
+            </div>
           ) : (
-            <div>
-              <h3>{questions[questionIndex]?.question}</h3>
-              {questions[questionIndex]?.options.map((option) => (
-                <button key={option} onClick={() => handleAnswer(option)}>
-                  {option}
+            <div className="question-container">
+              <h3>{currentNode.question}</h3>
+              <div className="options">
+                <button onClick={() => handleAnswer('yes')} className="btn btn-success">
+                  Yes
                 </button>
-              ))}
+                <button onClick={() => handleAnswer('no')} className="btn btn-danger">
+                  No
+                </button>
+              </div>
             </div>
           )}
 
-          {isLoading && <p>Loading...</p>}
-
-          {predictedDisease && (
-            <div>
-              <h3>Predicted Disease: {predictedDisease}</h3>
-              <p>Recommended Specialist: {recommendedSpecialist}</p>
+          {recommendedSpecialist && (
+            <div className="result-container">
+              <h3>Recommended Specialist</h3>
+              <p>{recommendedSpecialist}</p>
             </div>
           )}
         </section>
-
       </main>
 
       <footer>
