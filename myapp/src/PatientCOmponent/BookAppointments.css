@@ -1,19 +1,102 @@
-.search-bar {
-    max-width: 500px; /* Set maximum width */
-    margin: 0 auto;   /* Center the search bar */
+.booking-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+    padding: 20px;
   }
   
-  .fixed-card {
-    width: 18rem; /* Fixed card width */
-    height: 33rem; /* Fixed card height */
+  .booking-card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
   }
   
-  .card-img-top { /* Set a fixed height for the image */
-    object-fit: cover; /* Ensures image is cropped to fit the dimensions */
+  .booking-card h2 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 15px;
   }
   
-  .card-body {
-    height: calc(100% - 150px); /* Ensures that the body occupies the remaining space */
-    overflow-y: auto;
+  .booking-card p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  .form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  /* Styling for the time slots */
+  .time-slot-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+  
+  .time-slot-button {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #007bff;
+    background-color: white;
+    color: #007bff;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .time-slot-button:hover,
+  .time-slot-button.selected {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .book-btn {
+    width: 100%;
+    background: #007bff;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .book-btn:hover {
+    background: #0056b3;
   }
   

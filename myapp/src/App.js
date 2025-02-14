@@ -16,8 +16,9 @@ import WaitPage from './DoctorComponent/WaitPage';
 import Appointment from './DoctorComponent/Appointment';
 import DoctorNavbar from './DoctorComponent/DoctorNavbar';
 import DoctorProfile from './DoctorComponent/DoctorProfile';
-import BookAppointments from './PatientCOmponent/BookAppointments';
 import DoctorSignupPage from './CommonComponent/DoctorSignUp';
+import AllDoctors from './PatientCOmponent/AllDoctors';
+import BookAppointments from './PatientCOmponent/BookAppointments';
 
 function App() {
   return (
@@ -37,8 +38,9 @@ function App() {
           <Route path="/appointments" element={<Appointment/>} />
          <Route path="/doctornavbar" element={<DoctorNavbar/>} />
          <Route path="/doctorprofile" element={<DoctorProfile/>} />
-         <Route path="/bookappointments" element={<BookAppointments/>} />
+         <Route path="/alldoctors" element={<AllDoctors/>} />
          <Route path="/doctorsignup" element={<DoctorSignupPage/>} />
+         <Route path="/bookappointments" element={<BookAppointments/>} />
 
 
 

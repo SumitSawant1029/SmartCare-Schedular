@@ -38,7 +38,7 @@ const PatientNavbar = () => {
       <h1>Welcome, {doctorName || 'Loading...'}</h1> 
       <nav>
         <Link to="/patienthomepage">Home</Link>
-        <Link to="/bookappointments">Book Appointments</Link>
+        <Link to="/alldoctors">Book Appointments</Link>
         <Link to="/patientprofile">Profile</Link>
         <button onClick={handleLogout} className="logout-button">Logout</button>
       </nav>
