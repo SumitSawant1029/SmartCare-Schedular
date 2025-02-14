@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Appointment.css';
 import Navbar from './DoctorNavbar';
-
+import API_URL from '../config';
 const timeSlots = [
   '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
   '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM',
@@ -12,7 +12,6 @@ const timeSlots = [
 
 const Appointment = () => {
   const [allowedSlots, setAllowedSlots] = useState([]);
-  const [notAllowedSlots, setNotAllowedSlots] = useState([]);
   const doctorEmail = localStorage.getItem('email');
 
   useEffect(() => {
@@ -20,7 +19,7 @@ const Appointment = () => {
       if (!doctorEmail) return;
 
       try {
-        const response = await fetch('http://localhost:5000/api/doc/get-slots', {
+        const response = await fetch(`${API_URL}/api/doc/get-slots`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ doctorEmail }),
@@ -30,7 +29,6 @@ const Appointment = () => {
 
         if (response.status === 200) {
           setAllowedSlots(data.allowedSlots || []);
-          setNotAllowedSlots(data.notAllowedSlots || []);
         } else {
           console.error('No slots found:', data.message);
         }
@@ -48,7 +46,7 @@ const Appointment = () => {
     const updatedSlots = isAllowed ? allowedSlots.filter(s => s !== slot) : [...allowedSlots, slot];
 
     try {
-      const response = await fetch(`http://localhost:5000/api/doc/${apiEndpoint}`, {
+      const response = await fetch(`${API_URL}/api/doc/${apiEndpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ doctorEmail, slots: [slot] }),

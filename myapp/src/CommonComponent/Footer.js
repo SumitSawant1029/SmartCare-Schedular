@@ -1,6 +1,7 @@
 import React from 'react';
 import './Footer.css'; // Import CSS for Footer
 import logo from '../Asset/logoNavbar.png'; // Adjust the path to your logo image
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -21,10 +22,10 @@ const Footer = () => {
         <div className="footer-section">
           <h3>Quick Links</h3>
           <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Our Services</a></li>
-            <li><a href="#">Book an Appointment</a></li>
-            <li><a href="#">Contact Us</a></li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/services">Our Services</Link></li>
+            <li><Link to="/book-appointment">Book an Appointment</Link></li>
+            <li><Link to="/contact">Contact Us</Link></li>
           </ul>
         </div>
 
@@ -39,9 +40,15 @@ const Footer = () => {
         {/* Social Media Links */}
         <div className="footer-section social-links">
           <h3>Follow Us</h3>
-          <a href="https://www.facebook.com" className="social-link">Facebook</a>
-          <a href="https://www.twitter.com" className="social-link">Twitter</a>
-          <a href="https://www.linkedin.com" className="social-link">LinkedIn</a>
+          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="social-link">
+            Facebook
+          </a>
+          <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer" className="social-link">
+            Twitter
+          </a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="social-link">
+            LinkedIn
+          </a>
         </div>
       </div>
 

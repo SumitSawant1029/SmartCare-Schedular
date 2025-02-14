@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AdminHomePage.css';
 import API_BASE_URL from '../config'; // Import the API base URL
-import { Link } from 'react-router-dom';
 import AdminNavbar from './AdminNavbar';
 
 const ManagePatient = () => {

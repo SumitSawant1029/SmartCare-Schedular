@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './DoctorHomePage.css';
 import DoctorNavbar from './DoctorNavbar';
+import API_URL from '../config';
+
 
 // Calendar Component (now clickable)
 const Calendar = ({ appointmentCounts, onDateClick }) => {
@@ -92,7 +94,7 @@ const DoctorHomePage = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/book/appointments/doctor', {
+        const response = await fetch(`${API_URL}/api/book/appointments/doctor`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

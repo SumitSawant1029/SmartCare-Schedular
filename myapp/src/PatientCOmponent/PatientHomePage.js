@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_URL from '../config'; // Adjust the path as needed
 import './PatientHomePage.css';
 import PatientNavbar from './PatientNavbar';
 import decisionTree from '../Asset/decisionTree.json';
@@ -16,12 +17,12 @@ const PatientHomePage = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/book/appointments/patient', {
+        const response = await fetch(`${API_URL}/api/book/appointments/patient`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ patientEmail: patientEmail }),
+          body: JSON.stringify({ patientEmail }),
         });
 
         const data = await response.json();
@@ -37,7 +38,7 @@ const PatientHomePage = () => {
     };
 
     fetchAppointments();
-  }, []);
+  }, [patientEmail]);
 
   // Handle user's answer in the decision tree
   const handleAnswer = (answer) => {
@@ -52,17 +53,21 @@ const PatientHomePage = () => {
     }
   };
 
-  // Handle cancel appointment logic
+  // Handle cancel appointment logic: set the appointment to cancel and show modal
   const cancelAppointment = (appointmentId) => {
-    setAppointmentToCancel(appointmentId); // Set the appointment to cancel
-    setShowCancelModal(true); // Show the confirmation modal
+    setAppointmentToCancel(appointmentId);
+    setShowCancelModal(true);
   };
 
-  // Confirm the cancelation of the appointment
+  // Confirm the cancellation of the appointment using the cancel API endpoint
   const confirmCancel = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/book/appointments/cancel/${appointmentToCancel}`, {
-        method: 'DELETE',
+      const response = await fetch(`${API_URL}/api/book/bookings/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: appointmentToCancel }),
       });
 
       if (response.ok) {
@@ -89,15 +94,18 @@ const PatientHomePage = () => {
     const dateObj = new Date(appointmentDate);
 
     // Extract date in YYYY-MM-DD format (UTC)
-    const date = dateObj.getUTCFullYear() + '-' + (dateObj.getUTCMonth() + 1).toString().padStart(2, '0') + '-' + dateObj.getUTCDate().toString().padStart(2, '0');
+    const date = dateObj.getUTCFullYear() +
+      '-' +
+      (dateObj.getUTCMonth() + 1).toString().padStart(2, '0') +
+      '-' +
+      dateObj.getUTCDate().toString().padStart(2, '0');
 
     // Extract time in HH:MM format (UTC)
-    const time = dateObj.getUTCHours().toString().padStart(2, '0') + ':' + dateObj.getUTCMinutes().toString().padStart(2, '0');
+    const time = dateObj.getUTCHours().toString().padStart(2, '0') +
+      ':' +
+      dateObj.getUTCMinutes().toString().padStart(2, '0');
 
-    return {
-      date,
-      time,
-    };
+    return { date, time };
   };
 
   return (
@@ -112,20 +120,21 @@ const PatientHomePage = () => {
             ) : (
               appointments.map((appointment) => {
                 const { date, time } = formatAppointmentDate(appointment.appointmentDate);
-
                 return (
                   <li key={appointment._id}>
-                    <strong>Doctor:  </strong> Dr. {appointment.doctorName}<br />
-                    <strong>Date:</strong> {date}<br /> {/* Displaying the date */}
-                    <strong>Time:</strong> {time}<br /> {/* Displaying the time */}
+                    <strong>Doctor: </strong> Dr. {appointment.doctorName}<br />
+                    <strong>Date:</strong> {date}<br />
+                    <strong>Time:</strong> {time}<br />
                     <strong>Symptoms:</strong> {appointment.symptoms}<br />
                     <strong>Status:</strong> {appointment.status}<br />
-                    <button
-                      className="btn btn-danger cancel-btn"
-                      onClick={() => cancelAppointment(appointment._id)}
-                    >
-                      Cancel Appointment
-                    </button>
+                    {appointment.status !== "cancelled" && (
+                      <button
+                        className="btn btn-danger cancel-btn"
+                        onClick={() => cancelAppointment(appointment._id)}
+                      >
+                        Cancel Appointment
+                      </button>
+                    )}
                   </li>
                 );
               })

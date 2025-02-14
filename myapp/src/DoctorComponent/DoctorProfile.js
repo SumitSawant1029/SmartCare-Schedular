@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './DoctorProfile.css';
 import Navbar from './DoctorNavbar';
+import API_URL from '../config';
+
 const DoctorProfile = () => {
   const [doctorDetails, setDoctorDetails] = useState({
     firstname: '',
@@ -16,7 +18,7 @@ const DoctorProfile = () => {
   useEffect(() => {
     const email = localStorage.getItem('email');
     if (email) {
-      fetch(`http://localhost:5000/api/auth/user?email=${encodeURIComponent(email)}`, {
+      fetch(`${API_URL}/api/auth/user?email=${encodeURIComponent(email)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

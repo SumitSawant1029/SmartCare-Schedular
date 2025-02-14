@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DoctorRegistrationForm.css";
+import API_URL from "../config";
 
 const specializations = [
   "Cardiologist", "Dermatologist", "Neurologist", "Orthopedic", "Pediatrician", "Psychiatrist", "Surgeon"
@@ -16,25 +17,42 @@ const steps = [
 function DoctorRegistrationForm() {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({});
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [profilePicture, setProfilePicture] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
 
+  // Wrap checkDoctorStatus in useCallback to stabilize it
+  const checkDoctorStatus = useCallback(async (email) => {
+    try {
+      const response = await fetch(`${API_URL}/api/doc/check-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      setLoading(false);
+      if (data.success && data.message === false) {
+        navigate("/waitpage");
+      } else if (data.success && data.message === true) {
+        navigate("/doctorhomepage");
+      }
+    } catch (error) {
+      setLoading(false);
+    }
+  }, [navigate]);
+
   useEffect(() => {
     async function fetchUserDetails() {
       try {
         const token = localStorage.getItem("authToken");
-        const response = await fetch("http://localhost:5000/api/auth/getuserdetails", {
+        const response = await fetch(`${API_URL}/api/auth/getuserdetails`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ authtoken: token }),
         });
-
         const data = await response.json();
         if (data.success) {
-          setEmail(data.data.email);
           checkDoctorStatus(data.data.email);
         } else {
           setLoading(false);
@@ -44,23 +62,7 @@ function DoctorRegistrationForm() {
       }
     }
     fetchUserDetails();
-  }, []);
-
-  const checkDoctorStatus = async (email) => {
-    try {
-      const response = await fetch("http://localhost:5000/api/doc/check-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await response.json();
-      setLoading(false);
-      if (data.success && data.message === false) navigate("/waitpage");
-      else if (data.success && data.message === true) navigate("/doctorhomepage");
-    } catch (error) {
-      setLoading(false);
-    }
-  };
+  }, [checkDoctorStatus]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -85,14 +87,20 @@ function DoctorRegistrationForm() {
       <header className="header">
         <h1>Welcome</h1>
         <nav>
-          <button onClick={() => navigate("/")} className="logout-button">Logout</button>
+          <button onClick={() => navigate("/")} className="logout-button">
+            Logout
+          </button>
         </nav>
       </header>
       <div className="doctor-registration-card">
         <div className="doctor-registration-content">
           <h2 className="doctor-registration-title">Doctor Registration</h2>
           {submitted ? (
-            <p>Successfully Submitted! Your submission is under review. You will shortly receive an email if your submission is valid and approved. Thank you for your patience.</p>
+            <p>
+              Successfully Submitted! Your submission is under review. You will
+              shortly receive an email if your submission is valid and approved.
+              Thank you for your patience.
+            </p>
           ) : (
             <>
               {steps[step] && (
@@ -122,16 +130,32 @@ function DoctorRegistrationForm() {
               {step === steps.length && (
                 <div className="profile-picture-section">
                   <h3>Upload Profile Picture</h3>
-                  <input type="file" accept="image/*" onChange={(e) => setProfilePicture(URL.createObjectURL(e.target.files[0]))} />
-                  {profilePicture && <img src={profilePicture} alt="Profile Preview" width="100" />}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setProfilePicture(URL.createObjectURL(e.target.files[0]))
+                    }
+                  />
+                  {profilePicture && (
+                    <img src={profilePicture} alt="Profile Preview" width="100" />
+                  )}
                 </div>
               )}
               <div className="button-group">
-                {step > 0 && <button onClick={handleBack} className="back-button">Back</button>}
+                {step > 0 && (
+                  <button onClick={handleBack} className="back-button">
+                    Back
+                  </button>
+                )}
                 {step < steps.length ? (
-                  <button onClick={handleNext} className="next-button">Next</button>
+                  <button onClick={handleNext} className="next-button">
+                    Next
+                  </button>
                 ) : (
-                  <button onClick={handleSubmit} className="submit-button">Submit</button>
+                  <button onClick={handleSubmit} className="submit-button">
+                    Submit
+                  </button>
                 )}
               </div>
             </>

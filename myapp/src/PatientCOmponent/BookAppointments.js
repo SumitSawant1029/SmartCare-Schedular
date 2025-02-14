@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useLocation, Link } from "react-router-dom";
 import PatientNavbar from "./PatientNavbar";
 import Footer from "../CommonComponent/Footer";
 import "./BookAppointments.css";
+import API_URL from "../config";
 
 const BookAppointments = () => {
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
+  // Memoize URLSearchParams so it only changes when location.search changes
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
 
   const [doctorEmail, setDoctorEmail] = useState("");
   const [doctorName, setDoctorName] = useState("Unknown Doctor");
@@ -28,24 +30,12 @@ const BookAppointments = () => {
     console.log("URL Params - doctorEmail:", email, "doctorName:", name);
     setDoctorEmail(email || "No Email Provided");
     setDoctorName(name || "Unknown Doctor");
-  }, [location.search]);
+  }, [params]);
 
-  // Fetch available slots when a valid date is selected and doctorEmail exists
-  useEffect(() => {
-    if (doctorEmail && appointmentDate) {
-      console.log(
-        "Fetching available slots for doctorEmail:",
-        doctorEmail,
-        "and appointmentDate:",
-        appointmentDate
-      );
-      fetchAvailableSlots();
-    }
-  }, [appointmentDate, doctorEmail]);
-
-  const fetchAvailableSlots = async () => {
+  // Memoize fetchAvailableSlots to prevent re-creation on every render
+  const fetchAvailableSlots = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/book/available-slots", {
+      const response = await fetch(`${API_URL}/api/book/available-slots`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ doctorEmail, date: appointmentDate }),
@@ -60,7 +50,20 @@ const BookAppointments = () => {
     } catch (error) {
       console.error("Failed to fetch available slots:", error);
     }
-  };
+  }, [doctorEmail, appointmentDate]);
+
+  // Fetch available slots when a valid date is selected and doctorEmail exists
+  useEffect(() => {
+    if (doctorEmail && appointmentDate) {
+      console.log(
+        "Fetching available slots for doctorEmail:",
+        doctorEmail,
+        "and appointmentDate:",
+        appointmentDate
+      );
+      fetchAvailableSlots();
+    }
+  }, [appointmentDate, doctorEmail, fetchAvailableSlots]);
 
   // Helper function to convert 12-hour time (e.g., "09:30 AM") to 24-hour format ("09:30")
   const convertTime12to24 = (time12h) => {
@@ -117,7 +120,7 @@ const BookAppointments = () => {
     console.log("Booking Data:", bookingData);
 
     try {
-      const response = await fetch("http://localhost:5000/api/book/bookings", {
+      const response = await fetch(`${API_URL}/api/book/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),

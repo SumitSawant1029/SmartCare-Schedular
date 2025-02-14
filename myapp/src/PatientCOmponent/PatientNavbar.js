@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './PatientNavbar.css';
-
+import API_URL from '../config';
 const PatientNavbar = () => {
   const navigate = useNavigate();
   const [doctorName, setDoctorName] = useState('');
@@ -10,7 +10,7 @@ const PatientNavbar = () => {
     const email = localStorage.getItem("email");
 
     if (email) {
-      fetch(`http://localhost:5000/api/auth/user?email=${encodeURIComponent(email)}`, {
+      fetch(`${API_URL}/api/auth/user?email=${encodeURIComponent(email)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

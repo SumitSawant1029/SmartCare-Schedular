@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./SignupPage.css";
+import API_URL from "../config";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ const SignupPage = () => {
   const sendOtp = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/auth/sendotp", {
+      const response = await fetch(`${API_URL}/api/auth/sendotp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +83,7 @@ const SignupPage = () => {
   const verifyOtp = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/auth/verifyotp", {
+      const response = await fetch(`${API_URL}/api/auth/verifyotp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +136,7 @@ const SignupPage = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/auth/createuser", {
+      const response = await fetch(`${API_URL}/api/auth/createuser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AdminHomePage.css';
-import API_BASE_URL from '../config'; // Import the API base URL
-import { Link } from 'react-router-dom';
+import API_URL from '../config'; // Import the API base URL
 import AdminNavbar from './AdminNavbar';
 
 const ManageDoctor = () => {
@@ -16,7 +15,7 @@ const ManageDoctor = () => {
   // Fetch doctors from API
   const fetchDoctors = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/doc/getallusers/doctor`, {
+      const response = await fetch(`${API_URL}/api/doc/getallusers/doctor`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           'Content-Type': 'application/json'
@@ -54,7 +53,7 @@ const ManageDoctor = () => {
     try {
       console.log(`Approving doctor with ID: ${doctorId} and Email: ${doctorEmail}`); // Debug log
 
-      const response = await fetch(`${API_BASE_URL}/api/doc/approve`, {
+      const response = await fetch(`${API_URL}/api/doc/approve`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -80,7 +79,7 @@ const ManageDoctor = () => {
       // After approval, trigger the setAvailability API
       console.log(`Setting availability for doctor email: ${doctorEmail}`);
 
-      const availabilityResponse = await fetch(`${API_BASE_URL}/api/doc/setAvailability`, {
+      const availabilityResponse = await fetch(`${API_URL}/api/doc/setAvailability`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -1,37 +1,54 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const nodemailer = require("nodemailer");
 const Booking = require("../models/Booking");
 const User = require("../models/User"); // Single User model for both Patients and Doctors
 
 const router = express.Router();
 
+// Create transporter for Nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "sumitsawant1029@gmail.com",
+    pass: "oscq nkbq lvja tkqd", // For security, store credentials in environment variables
+  },
+});
+
+// ==================================================================
 // API to create a booking
+// ==================================================================
 router.post("/bookings", async (req, res) => {
   try {
     const { patientEmail, doctorEmail, appointmentDate, symptoms } = req.body;
 
     // 1. Validate that appointmentDate exists and is valid.
     if (!appointmentDate) {
-      return res.status(400).json({ message: "Appointment date is required." });
+      return res
+        .status(400)
+        .json({ message: "Appointment date is required." });
     }
     const parsedDate = new Date(appointmentDate);
     if (isNaN(parsedDate.getTime())) {
-      return res.status(400).json({ message: "Invalid appointment date provided." });
+      return res
+        .status(400)
+        .json({ message: "Invalid appointment date provided." });
     }
 
     // 2. Normalize the appointment date to compute the UTC start and end of that day.
-    const startOfDayUTC = new Date(Date.UTC(
-      parsedDate.getUTCFullYear(),
-      parsedDate.getUTCMonth(),
-      parsedDate.getUTCDate()
-    ));
+    const startOfDayUTC = new Date(
+      Date.UTC(
+        parsedDate.getUTCFullYear(),
+        parsedDate.getUTCMonth(),
+        parsedDate.getUTCDate()
+      )
+    );
     const endOfDayUTC = new Date(startOfDayUTC.getTime() + 24 * 60 * 60 * 1000);
     console.log("Parsed Appointment Date:", parsedDate);
     console.log("UTC Start of Day:", startOfDayUTC);
     console.log("UTC End of Day:", endOfDayUTC);
 
     // 3. Check for conflict #1: One appointment per day.
-    //    Look for any active (non-cancelled) appointment on this UTC day for the patient.
     const existingSameDayBooking = await Booking.findOne({
       patientEmail,
       appointmentDate: {
@@ -41,18 +58,21 @@ router.post("/bookings", async (req, res) => {
       status: { $ne: "cancelled" },
     });
     if (existingSameDayBooking) {
-      return res.status(400).json({ message: "You already have an appointment on this date." });
+      return res
+        .status(400)
+        .json({ message: "You already have an appointment on this date." });
     }
 
     // 4. Check for conflict #2: One appointment per doctor.
-    //    Look for any active (non-cancelled) appointment for this patient with this doctor.
     const existingBookingForDoctor = await Booking.findOne({
       patientEmail,
       doctorEmail,
       status: { $ne: "cancelled" },
     });
     if (existingBookingForDoctor) {
-      return res.status(400).json({ message: "You already have an appointment with this doctor." });
+      return res
+        .status(400)
+        .json({ message: "You already have an appointment with this doctor." });
     }
 
     // 5. Verify that the patient exists.
@@ -81,9 +101,26 @@ router.post("/bookings", async (req, res) => {
       doctorEmail,
       appointmentDate: parsedDate, // Use the original date (which may include time)
       symptoms,
+      // Optionally, set a default status like "pending" if your model requires it
     });
 
     await newBooking.save();
+
+    // Configure email options for appointment confirmation
+    const mailOptions = {
+      from: "sumitsawant1029@gmail.com",
+      to: newBooking.patientEmail,
+      subject: "Appointment Scheduled",
+      text: `Dear ${newBooking.patientName},\n\nYour appointment is scheduled on ${newBooking.appointmentDate.toLocaleString()}.\n\nRegards,\nSmartCare Scheduler`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending appointment confirmation email:", error);
+      } else {
+        console.log("Appointment confirmation email sent:", info.response);
+      }
+    });
 
     console.log("New booking created:", newBooking);
     return res.status(201).json({
@@ -92,23 +129,128 @@ router.post("/bookings", async (req, res) => {
     });
   } catch (error) {
     console.error("Booking error:", error);
-    return res.status(500).json({ message: "Error booking appointment", error: error.message });
+    return res.status(500).json({
+      message: "Error booking appointment",
+      error: error.message,
+    });
   }
 });
 
+// ==================================================================
+// API to cancel an appointment and notify the patient via email
+// ==================================================================
+router.post("/bookings/cancel", async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ message: "Appointment ID is required." });
+    }
 
+    // Validate the ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid appointment ID." });
+    }
 
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found." });
+    }
 
+    // Update the status to "cancelled"
+    booking.status = "cancelled";
+    await booking.save();
 
+    // Send cancellation email to the patient
+    const mailOptions = {
+      from: "sumitsawant1029@gmail.com",
+      to: booking.patientEmail,
+      subject: "Appointment Cancelled",
+      text: `Dear ${booking.patientName},\n\nYour appointment scheduled on ${booking.appointmentDate.toLocaleString()} has been cancelled.\n\nRegards,\nSmartCare Scheduler`,
+    };
 
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending cancellation email:", error);
+      } else {
+        console.log("Cancellation email sent:", info.response);
+      }
+    });
 
+    console.log("Appointment cancelled:", booking);
+    return res.status(200).json({
+      message: "Appointment cancelled successfully",
+      booking,
+    });
+  } catch (error) {
+    console.error("Cancel appointment error:", error);
+    return res.status(500).json({
+      message: "Error cancelling appointment",
+      error: error.message,
+    });
+  }
+});
 
+// ==================================================================
+// API to confirm an appointment and notify the patient via email
+// ==================================================================
+router.post("/bookings/confirm", async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ message: "Appointment ID is required." });
+    }
 
+    // Validate the ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid appointment ID." });
+    }
 
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found." });
+    }
 
+    // Update the status to "confirmed"
+    booking.status = "confirmed";
+    await booking.save();
 
+    // Send confirmation email to the patient
+    const mailOptions = {
+      from: "sumitsawant1029@gmail.com",
+      to: booking.patientEmail,
+      subject: "Appointment Confirmed",
+      text: `Dear ${booking.patientName},\n\nYour appointment scheduled on ${booking.appointmentDate.toLocaleString()} has been confirmed.\n\nRegards,\nSmartCare Scheduler`,
+    };
 
-// Define available time slots
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending confirmation email:", error);
+      } else {
+        console.log("Confirmation email sent:", info.response);
+      }
+    });
+
+    console.log("Appointment confirmed:", booking);
+    return res.status(200).json({
+      message: "Appointment confirmed successfully",
+      booking,
+    });
+  } catch (error) {
+    console.error("Confirm appointment error:", error);
+    return res.status(500).json({
+      message: "Error confirming appointment",
+      error: error.message,
+    });
+  }
+});
+
+// ==================================================================
+// API to fetch available slots for a doctor on a given date (Using Request Body)
+// ==================================================================
 const generateTimeSlots = () => {
   let timeSlots = [];
   for (let hour = 9; hour <= 17; hour++) {
@@ -118,7 +260,6 @@ const generateTimeSlots = () => {
   return timeSlots;
 };
 
-// API to fetch available slots for a doctor on a given date (Using Request Body)
 router.post("/available-slots", async (req, res) => {
   try {
     const { doctorEmail, date } = req.body;
@@ -131,13 +272,14 @@ router.post("/available-slots", async (req, res) => {
     const appointmentDate = new Date(date);
     appointmentDate.setUTCHours(0, 0, 0, 0);
 
-    // Fetch booked slots for the doctor on the given date
+    // Fetch booked slots for the doctor on the given date, excluding cancelled appointments
     const bookedAppointments = await Booking.find({
       doctorEmail,
       appointmentDate: {
         $gte: appointmentDate, // Start of the day (00:00:00 UTC)
         $lt: new Date(appointmentDate.getTime() + 24 * 60 * 60 * 1000), // End of the day
       },
+      status: { $ne: "cancelled" }
     });
 
     // Extract booked time slots properly in HH:MM format
@@ -146,10 +288,8 @@ router.post("/available-slots", async (req, res) => {
       return `${bookedTime.getUTCHours()}:00`; // Ensuring UTC-based extraction
     });
 
-    // Generate full list of available time slots
+    // Generate full list of available time slots and filter out booked slots
     const allTimeSlots = generateTimeSlots();
-
-    // Filter out booked slots
     const availableSlots = allTimeSlots.filter((slot) => !bookedSlots.includes(slot));
 
     res.status(200).json({ availableSlots });
@@ -159,6 +299,9 @@ router.post("/available-slots", async (req, res) => {
   }
 });
 
+// ==================================================================
+// API to fetch patient appointments (excluding cancelled)
+// ==================================================================
 router.post("/appointments/patient", async (req, res) => {
   try {
     const { patientEmail } = req.body;
@@ -167,7 +310,11 @@ router.post("/appointments/patient", async (req, res) => {
       return res.status(400).json({ message: "Patient email is required" });
     }
 
-    const appointments = await Booking.find({ patientEmail });
+    // Exclude cancelled appointments
+    const appointments = await Booking.find({
+      patientEmail,
+      status: { $ne: "cancelled" }
+    });
 
     res.status(200).json({ appointments });
   } catch (error) {
@@ -176,6 +323,9 @@ router.post("/appointments/patient", async (req, res) => {
   }
 });
 
+// ==================================================================
+// API to fetch doctor appointments (excluding cancelled)
+// ==================================================================
 router.post("/appointments/doctor", async (req, res) => {
   try {
     const { doctorEmail } = req.body;
@@ -184,7 +334,11 @@ router.post("/appointments/doctor", async (req, res) => {
       return res.status(400).json({ message: "Doctor email is required" });
     }
 
-    const appointments = await Booking.find({ doctorEmail });
+    // Exclude cancelled appointments
+    const appointments = await Booking.find({
+      doctorEmail,
+      status: { $ne: "cancelled" }
+    });
 
     res.status(200).json({ appointments });
   } catch (error) {
@@ -193,12 +347,9 @@ router.post("/appointments/doctor", async (req, res) => {
   }
 });
 
-
-// API to get appointment count by date for a given month and doctor
-// POST /api/doctor/appointments-count-by-month
-// Expected body: { doctorEmail, month, year }
-//   - month: a number between 1 and 12
-//   - year: the full year (e.g., 2025)
+// ==================================================================
+// API to fetch appointment counts by month (excluding cancelled)
+// ==================================================================
 router.post('/appointments-count-by-month', async (req, res) => {
   try {
     const { doctorEmail, month, year } = req.body;
@@ -212,17 +363,16 @@ router.post('/appointments-count-by-month', async (req, res) => {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 1);
 
-    // Find appointments for the doctor within the date range
+    // Find appointments for the doctor within the date range, excluding cancelled appointments
     const appointments = await Booking.find({
       doctorEmail,
       appointmentDate: { $gte: startDate, $lt: endDate },
+      status: { $ne: "cancelled" }
     });
 
     // Group appointments by date (formatted as YYYY-MM-DD)
     const counts = {};
-
     appointments.forEach((appointment) => {
-      // Convert appointment date to YYYY-MM-DD format
       const dateStr = appointment.appointmentDate.toISOString().split('T')[0];
       counts[dateStr] = (counts[dateStr] || 0) + 1;
     });
@@ -233,6 +383,5 @@ router.post('/appointments-count-by-month', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
-
 
 module.exports = router;

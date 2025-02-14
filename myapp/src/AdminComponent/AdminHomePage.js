@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminHomePage.css';
-import API_BASE_URL from '../config'; // Import the API base URL
-import { Link } from 'react-router-dom';
+import API_URL from '../config';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet'; // Leaflet library for handling maps
 import AdminNavbar from './AdminNavbar';
@@ -18,22 +17,22 @@ const AdminHomePage = () => {
     totalDoctors: 0,
     totalPatients: 0,
   });
-  const [selectedUser, setSelectedUser] = useState(null); // New state for selected user
+  // Removed: const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null); // New state for error handling
 
   // Define different user icons for doctors and patients
   const doctorIcon = new L.Icon({
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png', // Blue icon for doctors
-    iconSize: [25, 41],  // size of the icon
-    iconAnchor: [12, 41], // point of the icon which will correspond to marker's location
-    popupAnchor: [1, -34], // point from which the popup should open
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
   });
 
   const patientIcon = new L.Icon({
-    iconUrl: 'https://w7.pngwing.com/pngs/457/630/png-transparent-location-logo-location-computer-icons-symbol-location-miscellaneous-angle-heart-thumbnail.png', // Green icon for patients
-    iconSize: [25, 41],  // size of the icon
-    iconAnchor: [12, 41], // point of the icon which will correspond to marker's location
-    popupAnchor: [1, -34], // point from which the popup should open
+    iconUrl: 'https://w7.pngwing.com/pngs/457/630/png-transparent-location-logo-location-computer-icons-symbol-location-miscellaneous-angle-heart-thumbnail.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
   });
 
   const [mapKey, setMapKey] = useState(0); // State to trigger map re-render
@@ -42,18 +41,18 @@ const AdminHomePage = () => {
   const appointmentData = {
     appointmentsByYear: {
       labels: ['2021', '2022', '2023', '2024'],
-      data: [100, 200, 250, 300], // Dummy data for appointments each year
+      data: [100, 200, 250, 300],
     },
     appointmentsPerYear: {
       labels: ['2021', '2022', '2023', '2024'],
-      data: [150, 220, 270, 330], // Dummy data for appointments scheduled each year
+      data: [150, 220, 270, 330],
     },
   };
 
   // Fetch users from the API
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/getallusers`);
+      const response = await fetch(`${API_URL}/api/auth/getallusers`);
       const data = await response.json();
 
       // Calculate stats dynamically
@@ -78,21 +77,21 @@ const AdminHomePage = () => {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/getuserdetails`, {
+      const response = await fetch(`${API_URL}/api/auth/getuserdetails`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          authtoken: token, // Send token in the request body
+          authtoken: token,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setSelectedUser(data.data); // Access the actual user data here
-        console.log(data); // Store the user details
+        // Removed setting selectedUser since it was not used.
+        console.log(data); // Log the user details if needed
       } else {
         setError(data.message || 'User not found');
       }
@@ -113,15 +112,17 @@ const AdminHomePage = () => {
   };
 
   // Custom hook to use the map instance and reset view
-  const ResetMap = () => {
-    const map = useMap(); // Get the map instance
-    useEffect(() => {
-      if (map) {
-        map.setView([20.5937, 78.9629], 5); // Coordinates for India and zoom level 5
-      }
-    }, [map, mapKey]); // Re-run when mapKey changes
-    return null;
-  };
+ // Custom hook to use the map instance and reset view
+const ResetMap = () => {
+  const map = useMap(); // Get the map instance
+  useEffect(() => {
+    if (map) {
+      map.setView([20.5937, 78.9629], 5); // Coordinates for India and zoom level 5
+    }
+  }, [map]); // Removed mapKey from dependency array
+  return null;
+};
+
 
   return (
     <div className="admin-dashboard">
@@ -146,33 +147,30 @@ const AdminHomePage = () => {
           </div>
         </section>
 
-        {error && <p className="error">{error}</p>} {/* Display error message if any */}
+        {error && <p className="error">{error}</p>}
 
         {/* Map section */}
         <section className="user-map">
           <h2>User Locations</h2>
           <MapContainer
-            key={mapKey} // Use mapKey to trigger re-render
-            center={[20.5937, 78.9629]}  // Center on India
-            zoom={5}  // Zoom level for India
+            key={mapKey}
+            center={[20.5937, 78.9629]}
+            zoom={5}
             style={{ height: '700px', width: '100%' }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            {/* Render markers for each user */}
             {users.map((user) => {
-              // Log user data to check if the coordinates are available
               console.log("User data:", user);
-              // Check if the coordinates exist and are valid
               if (user.location && user.location.coordinates && user.location.coordinates.length === 2) {
                 const [longitude, latitude] = user.location.coordinates;
                 return (
                   <Marker
                     key={user._id}
                     position={[latitude, longitude]}
-                    icon={user.role === 'Doctor' ? doctorIcon : patientIcon} // Use doctorIcon for doctors and patientIcon for patients
+                    icon={user.role === 'Doctor' ? doctorIcon : patientIcon}
                   >
                     <Popup>
                       <strong>{user.firstname} {user.lastname}</strong>
@@ -185,13 +183,12 @@ const AdminHomePage = () => {
                 );
               } else {
                 console.log(`No valid coordinates for ${user.firstname}`);
-                return null;  // Don't render the marker if no valid coordinates
+                return null;
               }
             })}
-            <ResetMap /> {/* Call ResetMap to reset the view */}
+            <ResetMap />
           </MapContainer>
 
-          {/* Button to reset the map */}
           <button onClick={resetMapToIndia} className="reset-map-button">Reset Map to India</button>
         </section>
 

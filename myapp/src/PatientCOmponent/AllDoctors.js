@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import API_URL from "../config"; // Adjust the path if needed
 import "./AllDoctors.css";
 import PatientNavbar from "./PatientNavbar";
-import { Link } from "react-router-dom";
 
 const AllDoctors = () => {
   const [doctors, setDoctors] = useState([]);
@@ -14,12 +15,10 @@ const AllDoctors = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/doc/getallusers/doctor"
-        );
+        const response = await fetch(`${API_URL}/api/doc/getallusers/doctor`);
         const data = await response.json();
         setDoctors(data || []);
-        setFilteredDoctors(data.slice(0, doctorsPerPage) || []); // Show first 12 doctors
+        setFilteredDoctors((data || []).slice(0, doctorsPerPage)); // Show first 12 doctors
       } catch (error) {
         console.error("Error fetching doctors:", error);
       }
@@ -76,9 +75,9 @@ const AllDoctors = () => {
 
         <div className="row">
           {filteredDoctors.map((doctor) => {
-
             // Extract doctor details safely
-            const doctorEmail = doctor?.userDetails?.email || doctor?.email || "Not Available";
+            const doctorEmail =
+              doctor?.userDetails?.email || doctor?.email || "Not Available";
             const doctorName =
               doctor?.userDetails?.firstname && doctor?.userDetails?.lastname
                 ? `${doctor.userDetails.firstname} ${doctor.userDetails.lastname}`
@@ -98,15 +97,19 @@ const AllDoctors = () => {
                   <div className="card-body">
                     <h5 className="card-title">{doctorName}</h5>
                     <p className="card-text">
-                      <strong>Specialization:</strong> {doctor?.specialization || "N/A"}
+                      <strong>Specialization:</strong>{" "}
+                      {doctor?.specialization || "N/A"}
                       <br />
                       <strong>Hospital:</strong> {doctor?.hospital || "N/A"}
                       <br />
-                      <strong>Years of Experience:</strong> {doctor?.yearsOfExperience || "N/A"}
+                      <strong>Years of Experience:</strong>{" "}
+                      {doctor?.yearsOfExperience || "N/A"}
                     </p>
                     {doctorEmail !== "Not Available" ? (
                       <Link
-                        to={`/bookappointments?email=${encodeURIComponent(doctorEmail)}&name=${encodeURIComponent(doctorName)}`}
+                        to={`/bookappointments?email=${encodeURIComponent(
+                          doctorEmail
+                        )}&name=${encodeURIComponent(doctorName)}`}
                       >
                         <button className="btn btn-primary">
                           Book Appointment

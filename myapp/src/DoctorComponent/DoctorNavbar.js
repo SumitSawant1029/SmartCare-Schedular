@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './DoctorHomePage.css';
+import API_URL from '../config';
 
 const DoctorNavbar = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const DoctorNavbar = () => {
     const email = localStorage.getItem("email");
     if (email) {
       // Make an API call to fetch doctor details using GET request
-      fetch(`http://localhost:5000/api/auth/user?email=${encodeURIComponent(email)}`, {
+      fetch(`${API_URL}/api/auth/user?email=${encodeURIComponent(email)}`, {
         method: 'GET', // Use GET instead of POST
         headers: {
           'Content-Type': 'application/json',
