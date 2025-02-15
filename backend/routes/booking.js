@@ -159,7 +159,7 @@ router.post("/bookings/cancel", async (req, res) => {
     }
 
     // Update the status to "cancelled"
-    booking.status = "cancelled";
+    booking.status = "PCancelled";
     await booking.save();
 
     // Send cancellation email to the patient
@@ -215,7 +215,7 @@ router.post("/bookings/confirm", async (req, res) => {
     }
 
     // Update the status to "confirmed"
-    booking.status = "confirmed";
+    booking.status = "DConfirmed";
     await booking.save();
 
     // Send confirmation email to the patient
@@ -312,8 +312,7 @@ router.post("/appointments/patient", async (req, res) => {
 
     // Exclude cancelled appointments
     const appointments = await Booking.find({
-      patientEmail,
-      status: { $ne: "cancelled" }
+      patientEmail
     });
 
     res.status(200).json({ appointments });

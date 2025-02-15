@@ -88,7 +88,7 @@ const Calendar = ({ appointmentCounts, onDateClick }) => {
 
 const DoctorHomePage = () => {
   const [appointments, setAppointments] = useState([]);
-  const doctorEmail = "abhaysingh21904@gmail.com"; // You can dynamically set this based on the logged-in user
+  const doctorEmail = localStorage.getItem('email'); // You can dynamically set this based on the logged-in user
 
   // Fetch appointments for the doctor from the API
   useEffect(() => {
@@ -206,7 +206,6 @@ const DoctorHomePage = () => {
 
                     return (
                       <li key={appointment._id} className="appointment-card">
-                        <strong>Doctor:</strong> Dr. {appointment.doctorName} <br />
                         <strong>Patient:</strong> {appointment.patientName} <br />
                         <strong>Date:</strong> {formattedDate} <br />
                         <strong>Time:</strong> {formattedTime} <br />
