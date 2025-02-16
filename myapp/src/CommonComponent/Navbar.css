@@ -1,5 +1,18 @@
-/* Navbar Styles */
-.navbar {
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/* Navbar Styling */
+nav.navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -10,74 +23,70 @@
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000; /* Ensures navbar stays above other elements */
+  z-index: 1000;
   transition: background-color 0.3s ease-in-out, padding 0.3s ease-in-out;
+  border: none;
+  box-shadow: none !important; /* Force no shadow */
 }
 
 /* Navbar changes color when scrolling */
-.navbar-scrolled {
+nav.navbar.navbar-scrolled {
   background-color: #0056b3; /* New color when scrolling */
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 10px 30px; /* Reduce padding when scrolling */
+  padding: 10px 30px; /* Reduced padding when scrolling */
+  box-shadow: none !important; /* Force no shadow on scroll */
 }
 
 /* Ensure content doesn't overlap */
-body {
-  margin: 0;
-  padding: 0;
-}
-
-/* Prevent content from being hidden behind the navbar */
 .main-content {
   padding-top: 80px; /* Adjust based on navbar height */
 }
 
 /* Logo Styling */
-.navbar-logo img {
+nav.navbar .navbar-logo img {
   width: 28%;
   transition: width 0.3s ease-in-out;
 }
 
 /* Reduce logo size when scrolling */
-.navbar-scrolled .navbar-logo img {
-  width: 22%; /* Adjust as needed */
+nav.navbar.navbar-scrolled .navbar-logo img {
+  width: 22%;
 }
 
 /* Centered Navbar Links */
-.navbar-links {
+nav.navbar .navbar-links {
   list-style-type: none;
   display: flex;
   flex-grow: 1;
-  justify-content: center; /* Center links */
+  justify-content: center;
   gap: 20px;
   padding: 0;
 }
 
-.navbar-link {
+nav.navbar .navbar-link {
   text-decoration: none;
   color: black;
   font-size: 1.1rem;
   transition: color 0.3s ease-in-out;
 }
 
-.navbar-link:hover {
+nav.navbar .navbar-link:hover {
   color: #0056b3;
   text-decoration: underline;
 }
 
 /* Navbar Links Change Color on Scroll */
-.navbar-scrolled .navbar-link {
+nav.navbar.navbar-scrolled .navbar-link {
   color: white;
 }
 
 /* Login & Sign Up Buttons on the Right */
-.navbar-buttons {
+nav.navbar .navbar-buttons {
   display: flex;
   gap: 15px;
 }
 
 /* Style for Log in button */
-.navbar-button {
+nav.navbar .navbar-button {
   text-decoration: none;
   background-color: #E1EEFF;
   color: #0056b3;
@@ -88,13 +97,13 @@ body {
   transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
-.navbar-button:hover {
+nav.navbar .navbar-button:hover {
   background-color: #0056b3;
   color: white;
 }
 
 /* Style for Sign Up button */
-.navbar-button1 {
+nav.navbar .navbar-button1 {
   text-decoration: none;
   background-color: #007bff;
   color: #fff;
@@ -105,28 +114,27 @@ body {
   transition: background 0.3s ease-in-out;
 }
 
-.navbar-button1:hover {
+nav.navbar .navbar-button1:hover {
   background-color: #0056b3;
 }
 
 /* Change button styles when scrolling */
-.navbar-scrolled .navbar-button {
+nav.navbar.navbar-scrolled .navbar-button {
   background-color: white;
   color: #007bff;
-  border-color: white;
 }
 
-.navbar-scrolled .navbar-button:hover {
+nav.navbar.navbar-scrolled .navbar-button:hover {
   background-color: #0056b3;
   color: white;
 }
 
-.navbar-scrolled .navbar-button1 {
+nav.navbar.navbar-scrolled .navbar-button1 {
   background-color: white;
   color: #007bff;
 }
 
-.navbar-scrolled .navbar-button1:hover {
+nav.navbar.navbar-scrolled .navbar-button1:hover {
   background-color: #0056b3;
   color: white;
 }

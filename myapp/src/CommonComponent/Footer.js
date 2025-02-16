@@ -1,6 +1,6 @@
 import React from 'react';
 import './Footer.css'; // Import CSS for Footer
-import logo from '../Asset/logoNavbar.png'; // Adjust the path to your logo image
+import logo from '../Asset/logoNavbarwhite.png'; // Adjust the path to your logo image
 import { Link } from 'react-router-dom';
 
 const Footer = () => {

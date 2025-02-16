@@ -9,6 +9,7 @@ import aibase from "../Asset/aibase.png";
 import appointment from "../Asset/appointment.png";
 import whychooseus from "../Asset/whychooseus.png";
 
+
 const LandingPage = () => {  
   return (
     <>

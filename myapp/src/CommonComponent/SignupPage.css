@@ -1,92 +1,153 @@
-.signup-form-container {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
+.signup-page {
   padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
+}
+
+.signup-form-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .signup-form-container h2 {
+  text-align: center;
   margin-bottom: 20px;
-  font-size: 24px;
-  color: #333;
 }
 
-.signup-form-container form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.input-group {
+  margin-bottom: 15px;
 }
 
-.signup-form-container input,
-.signup-form-container select,
-.signup-form-container button {
+.input-group input,
+.input-group select,
+.input-group button {
+  width: 100%;
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  outline: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.signup-form-container input:focus,
-.signup-form-container select:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+.error {
+  color: red;
+  font-size: 12px;
 }
 
-.signup-form-container button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.password-container {
+  display: flex;
+  width: 100%;
+  gap: 10px; /* Ensures space between input and button */
+}
+
+.password-container input {
+  width: 70%; /* 70% width for the input field */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.password-container button {
+  width: 30%; /* 30% width for the toggle button */
+  padding: 10px;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(197, 203, 85);
 }
 
-.signup-form-container button:hover {
-  background-color: #0056b3;
+.password-container button i {
+  font-size: 16px; /* Adjust icon size */
 }
 
-.signup-form-container button:disabled {
+/* Optional: Add some hover effect for the button */
+.password-container button:hover {
+  background-color: rgb(59, 46, 243);
+}
+
+input[type="date"] {
+  padding: 10px;
+}
+
+button {
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-.signup-form-container .error {
-  color: #d9534f;
+.phone-group {
+  display: flex;
+  gap: 10px;
+}
+
+.phone-group select,
+.phone-group input {
+  width: 48%;
+}
+
+.password-group {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* This adds space between the input field and the toggle button */
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input {
+  flex: 7; /* Takes up 70% of the available space */
+  padding: 8px;
+  font-size: 16px;
+}
+
+.show-password-btn {
+  flex: 2; /* Takes up 20% of the available space */
+  padding: 8px;
   font-size: 14px;
-  text-align: left;
-  margin-top: -10px;
+  cursor: pointer;
+  background-color: #f1f1f1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.signup-form-container .login-link {
-  margin-top: 15px;
-  font-size: 14px;
-}
-
-.signup-form-container .login-link a {
-  color: #007bff;
-  text-decoration: none;
-}
-
-.signup-form-container .login-link a:hover {
-  text-decoration: underline;
-}
-
-@media (max-width: 480px) {
-  .signup-form-container {
-    padding: 15px;
-  }
-
-  .signup-form-container h2 {
-    font-size: 20px;
-  }
-
-  .signup-form-container input,
-  .signup-form-container select,
-  .signup-form-container button {
-    font-size: 14px;
-  }
+.input-group > *:not(:last-child) {
+  margin-right: 10%; /* 10% space between input and button */
 }
