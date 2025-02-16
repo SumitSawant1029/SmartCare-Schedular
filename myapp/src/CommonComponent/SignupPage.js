@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./SignupPage.css";
-import API_URL from "../config"; // Add your API_URL here for the backend endpoint
+import API_URL from "../config"; // Your backend endpoint
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -25,15 +25,15 @@ const SignupPage = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // To toggle password visibility
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // To toggle confirm password visibility
+  const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Toggle confirm password visibility
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
   // Validation function for form fields
@@ -87,7 +87,7 @@ const SignupPage = () => {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error sending OTP:", error);
       setNotification({
         type: "danger",
         message: "Something went wrong while sending OTP!",
@@ -119,7 +119,7 @@ const SignupPage = () => {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error resending OTP:", error);
       setNotification({
         type: "danger",
         message: "Something went wrong while resending OTP!",
@@ -159,7 +159,7 @@ const SignupPage = () => {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error verifying OTP:", error);
       setNotification({
         type: "danger",
         message: "Something went wrong while verifying OTP!",
@@ -167,6 +167,17 @@ const SignupPage = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to get the user's current position as a Promise
+  const getUserLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation is not supported by your browser."));
+      } else {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      }
+    });
   };
 
   // Handle form submission after OTP verification
@@ -181,14 +192,22 @@ const SignupPage = () => {
       });
       return;
     }
-    const userData = {
-      ...formData,
-      mob: `${formData.countryCode}${formData.mob.trim()}`,
-      role: "Patient",
-      date: new Date().toISOString(),
-    };
     setIsLoading(true);
     try {
+      // Retrieve user location from the browser
+      const position = await getUserLocation();
+      const { latitude, longitude } = position.coords;
+
+      // Build the payload including latitude and longitude
+      const userData = {
+        ...formData,
+        mob: `${formData.mob}`,
+        role: "Patient",
+        date: new Date().toISOString(),
+        latitude,
+        longitude,
+      };
+
       const response = await fetch(`${API_URL}/api/auth/createuser`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -210,7 +229,7 @@ const SignupPage = () => {
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error during sign-up:", error);
       setNotification({
         type: "danger",
         message: "Something went wrong during sign-up!",
@@ -319,11 +338,7 @@ const SignupPage = () => {
           </div>
           {/* OTP */}
           {!otpSent && (
-            <button
-              type="button"
-              onClick={sendOtp}
-              disabled={isLoading}
-            >
+            <button type="button" onClick={sendOtp} disabled={isLoading}>
               {isLoading ? "Sending OTP..." : "Send OTP"}
             </button>
           )}
@@ -358,30 +373,33 @@ const SignupPage = () => {
                   onChange={handleChange}
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="show-password-btn"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
               </div>
               <div className="input-group">
-  <input
-    type={showConfirmPassword ? "text" : "password"}
-    name="cnfpassword"
-    placeholder="Confirm Password"
-    value={formData.cnfpassword}
-    onChange={handleChange}
-    required
-    className="password-input"
-  />
-  <button
-    type="button"
-    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-    className="show-password-btn"
-  >
-    {showConfirmPassword ? "Hide" : "Show"}
-  </button>
-</div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-              >
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="cnfpassword"
+                  placeholder="Confirm Password"
+                  value={formData.cnfpassword}
+                  onChange={handleChange}
+                  required
+                  className="password-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="show-password-btn"
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              <button type="submit" disabled={isLoading}>
                 {isLoading ? "Signing Up..." : "Sign Up"}
               </button>
             </>

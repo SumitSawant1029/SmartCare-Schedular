@@ -59,8 +59,7 @@ router.post('/getuserdetails', fetchuser, async (req, res) => {
 });
 
 // Update user creation route to generate and return authtoken
-router.post(
-  '/createuser',
+router.post('/createuser',
   [
     body('firstname', 'Enter a valid first name').isLength({ min: 3 }),
     body('lastname', 'Enter a valid last name').isLength({ min: 3 }),
