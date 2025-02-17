@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import API_URL from '../config'; // Adjust the path as needed
+import React, { useState, } from 'react';
+
 import './PatientHomePage.css';
 import PatientNavbar from './PatientNavbar';
 import decisionTree from '../Asset/decisionTree.json';
@@ -8,7 +8,6 @@ const PatientHomePage = () => {
   const [isQAActive, setIsQAActive] = useState(false);
   const [currentNode, setCurrentNode] = useState(decisionTree);
   const [recommendedSpecialist, setRecommendedSpecialist] = useState(null);
-  const patientEmail = localStorage.getItem('email');
 
 
   // Handle user's answer in the decision tree
@@ -30,8 +29,9 @@ const PatientHomePage = () => {
 
 
   return (
-    <div className="patient-dashboard">
+    <>
       <PatientNavbar />
+    <div className="patient-dashboard">
       <main className="main-content">
 
         {/* Symptom Checker Section */}
@@ -45,7 +45,7 @@ const PatientHomePage = () => {
                   setRecommendedSpecialist(null);
                 }}
                 className="btn btn-primary"
-              >
+                >
                 Start Symptom Checker
               </button>
             </div>
@@ -77,6 +77,7 @@ const PatientHomePage = () => {
         <p>Smart Care Scheduler © 2025</p>
       </footer>
     </div>
+    </>
   );
 };
 

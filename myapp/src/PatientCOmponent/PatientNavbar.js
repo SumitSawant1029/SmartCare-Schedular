@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './PatientNavbar.css';
 import API_URL from '../config';
-import { FaUserCircle, FaSignOutAlt, FaChevronDown, FaEnvelope } from 'react-icons/fa';
+import { FaUserCircle, FaChevronDown, FaEnvelope } from 'react-icons/fa';
 import logo from "../Asset/logoNavbarwhite.png";
 const PatientNavbar = () => {
   const navigate = useNavigate();
