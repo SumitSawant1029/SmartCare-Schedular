@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const Booking = require("../models/Booking");
 const User = require("../models/User"); // Single User model for both Patients and Doctors
+const moment = require("moment");
 
 const router = express.Router();
 
@@ -380,6 +381,45 @@ router.post('/appointments-count-by-month', async (req, res) => {
   } catch (error) {
     console.error('Error fetching appointment counts by month:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+router.post("/appointmentscount", async (req, res) => {
+  const { doctorEmail, month } = req.body;
+
+  if (!doctorEmail || !month) {
+    return res.status(400).json({ error: "Doctor email and month are required" });
+  }
+
+  try {
+    const startDate = moment(month, "YYYY-MM").startOf("month").toDate();
+    const endDate = moment(month, "YYYY-MM").endOf("month").toDate();
+
+    console.log("Querying appointments from:", startDate, "to", endDate);
+
+    const appointments = await Booking.aggregate([
+      {
+        $match: {
+          doctorEmail,
+          appointmentDate: { $gte: startDate, $lte: endDate }, // Fix: Use appointmentDate
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$appointmentDate" } }, // Convert date to string
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    console.log("Appointments fetched:", appointments);
+    res.json(appointments);
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
