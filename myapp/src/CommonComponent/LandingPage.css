@@ -186,6 +186,7 @@
 .banner {
   position: relative;
   width: 100%;
+  z-index: 0;
   height: auto ; /* Takes 60% of the viewport height */
   display: block;
   padding-top: 64px;
