@@ -1,0 +1,166 @@
+/* DoctorAppointmentHistory.css */
+
+.dashboard {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #F4F6F8;
+  }
+  
+  main {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  /* Status-Based Colors */
+  .appointment-card.cancelled {
+    background-color: #D3D3D3; /* Grey */
+  }
+  
+  .appointment-card.completed {
+    background-color: #28a745; /* Green */
+    color: white;
+  }
+  
+  .appointment-card.confirmed {
+    background-color: #f0ad4e; /* Yellow */
+  }
+  
+  /* Status Bar (Small Rectangle) on the Left */
+  .status-bar {
+    width: 10px;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  
+  .status-bar.cancelled {
+    background-color: #D3D3D3; /* Grey for cancelled */
+  }
+  
+  .status-bar.completed {
+    background-color: #28a745; /* Green for completed */
+  }
+  
+  .status-bar.confirmed {
+    background-color: #f0ad4e; /* Yellow for confirmed */
+  }
+  
+  /* Appointment Card Styles */
+  .appointment-card {
+    background-color: #ECF0F1;
+    margin-bottom: 15px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative; /* To position the status bar on the left */
+  }
+  
+  .appointment-card .appointment-details p {
+    font-size: 1rem;
+    color: #2C3E50;
+    margin: 5px 0;
+  }
+  
+  .appointment-card .appointment-details strong {
+    font-weight: bold;
+    color: #34495E;
+  }
+  
+  .appointment-card:hover {
+    background-color: #BDC3C7;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .appointment-card .appointment-details {
+    font-size: 1rem;
+  }
+  
+  .appointment-card .appointment-details p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .appointment-card p {
+    margin: 0;
+  }
+  
+  /* Filter Section Styling */
+  .filter-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .filter-section input,
+  .filter-section button {
+    padding: 8px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #BDC3C7;
+  }
+  
+  .filter-section button {
+    background-color: #3498DB;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .filter-section button:hover {
+    background-color: #2980B9;
+  }
+  
+  .filter-section input[type="date"] {
+    padding: 8px;
+  }
+  
+  .filter-section input {
+    padding: 8px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #BDC3C7;
+  }
+  
+  /* Appointments History Section */
+  .appointments-history {
+    background-color: #FFFFFF;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .appointments-history h2 {
+    font-size: 2rem;
+    color: #2C3E50;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  
+  .appointments-history-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .appointments-history-list ul {
+    padding-left: 0;
+    margin: 0;
+  }
+  
+  /* Footer Styles */
+  footer {
+    background-color: #2C3E50;
+    padding: 10px 0;
+    text-align: center;
+    color: #ECF0F1;
+    font-size: 0.9rem;
+  }
+  
+  footer p {
+    margin: 0;
+  }
+  

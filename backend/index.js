@@ -13,6 +13,7 @@ app.use('/api/auth',require('./routes/auth'));
 app.use('/api/doc',require('./routes/doctor'));
 app.use('/api/adm',require('./routes/admin'));
 app.use('/api/book',require('./routes/booking'));
+app.use('/api/feedb',require('./routes/doctorfeedback'));
 
 
 

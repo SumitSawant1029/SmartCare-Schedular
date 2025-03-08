@@ -3,109 +3,35 @@ import './DoctorHomePage.css';
 import DoctorNavbar from './DoctorNavbar';
 import API_URL from '../config';
 
-
-// Calendar Component (now clickable)
-const Calendar = ({ appointmentCounts, onDateClick }) => {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth(); // 0-indexed: 0 for January, 11 for December
-  const monthName = now.toLocaleString('default', { month: 'long' });
-
-  // Get first and last day of the month
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  const lastDay = new Date(currentYear, currentMonth + 1, 0);
-  const daysInMonth = lastDay.getDate();
-  const startDay = firstDay.getDay(); // Day of week (0: Sunday, 6: Saturday)
-
-  // Build weeks array (each week is an array of days)
-  const weeks = [];
-  let week = [];
-
-  // Fill initial empty cells for days before the 1st
-  for (let i = 0; i < startDay; i++) {
-    week.push(null);
-  }
-
-  // Fill in days for the month
-  for (let day = 1; day <= daysInMonth; day++) {
-    week.push(day);
-    if (week.length === 7) {
-      weeks.push(week);
-      week = [];
-    }
-  }
-
-  // If there are remaining days in the week, fill with null
-  if (week.length > 0) {
-    while (week.length < 7) {
-      week.push(null);
-    }
-    weeks.push(week);
-  }
-
-  return (
-    <div className="calendar">
-      <h3>{monthName} {currentYear}</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Sun</th>
-            <th>Mon</th>
-            <th>Tue</th>
-            <th>Wed</th>
-            <th>Thu</th>
-            <th>Fri</th>
-            <th>Sat</th>
-          </tr>
-        </thead>
-        <tbody>
-          {weeks.map((week, i) => (
-            <tr key={i}>
-              {week.map((day, j) => (
-                <td
-                  key={j}
-                  className="calendar-cell"
-                  onClick={() => day && onDateClick(new Date(currentYear, currentMonth, day))}
-                  style={{ cursor: day ? 'pointer' : 'default' }}
-                >
-                  {day && (
-                    <div>
-                      <div className="day-number">{day}</div>
-                      <div className="appointment-count">
-                        {appointmentCounts[day] || 0} appointments
-                      </div>
-                    </div>
-                  )}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
 const DoctorHomePage = () => {
   const [appointments, setAppointments] = useState([]);
-  const doctorEmail = localStorage.getItem('email'); // You can dynamically set this based on the logged-in user
+  const [showPopup, setShowPopup] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [prescriptionBase64, setPrescriptionBase64] = useState(''); // Base64 string for prescription
+  const [doctorNotes, setDoctorNotes] = useState('');
+  const [files, setFiles] = useState([]); // Array to store multiple files
 
-  // Fetch appointments for the doctor from the API
+  const doctorEmail = localStorage.getItem('email');
+
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
         const response = await fetch(`${API_URL}/api/book/appointments/doctor`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ doctorEmail }),
         });
 
         if (response.ok) {
           const data = await response.json();
-          console.log(data);
-          setAppointments(data.appointments);  // Assuming response has 'appointments' field
+          const today = new Date().setHours(0, 0, 0, 0);
+
+          const filteredAppointments = data.appointments.filter((appointment) => {
+            const appointmentDate = new Date(appointment.appointmentDate).setHours(0, 0, 0, 0);
+            return appointmentDate === today;
+          });
+
+          setAppointments(filteredAppointments);
         } else {
           console.error('Error fetching appointments');
         }
@@ -117,82 +43,78 @@ const DoctorHomePage = () => {
     fetchAppointments();
   }, [doctorEmail]);
 
-  // Cancel appointment handler
-  const cancelAppointment = (appointmentId) => {
-    console.log(`Canceling appointment with ID: ${appointmentId}`);
-    // Add API call logic here to cancel the appointment
+  const handleCompleteClick = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowPopup(true);
   };
 
-  // Confirm appointment handler
-  const confirmAppointment = (appointmentId) => {
-    console.log(`Confirming appointment with ID: ${appointmentId}`);
-    // Add API call logic here to confirm the appointment
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    const pdfFiles = selectedFiles.filter((file) => file.type === 'application/pdf');
+    if (pdfFiles.length > 0) {
+      setFiles(pdfFiles);
+    } else {
+      alert('Only PDF files are allowed!');
+    }
   };
 
-  // Format Date and Time (using UTC to display the API's time correctly)
-  const formatDateAndTime = (dateString) => {
-    const appointmentDate = new Date(dateString);
-
-    // Extract date in UTC
-    const day = appointmentDate.getUTCDate();
-    const month = appointmentDate.getUTCMonth() + 1; // Months are 0-indexed
-    const year = appointmentDate.getUTCFullYear();
-
-    // Extract time in UTC
-    const hours = appointmentDate.getUTCHours();
-    const minutes = appointmentDate.getUTCMinutes();
-    const seconds = appointmentDate.getUTCSeconds();
-
-    // Format date as DD/MM/YYYY
-    const formattedDate = `${day.toString().padStart(2, '0')}/${month
-      .toString()
-      .padStart(2, '0')}/${year}`;
-
-    // Format time with AM/PM
-    const timePeriod = hours >= 12 ? 'PM' : 'AM';
-    const formattedTime = `${(hours % 12 || 12)
-      .toString()
-      .padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${timePeriod}`;
-
-    return { formattedDate, formattedTime };
+  const handlePrescriptionChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPrescriptionBase64(reader.result.split(',')[1]); // Set Base64 string (excluding data URL prefix)
+      };
+      reader.readAsDataURL(file);
+    } else {
+      alert('Please upload a PDF for the prescription.');
+    }
   };
 
-  // Dummy appointment counts for the calendar (later replace with real data)
-  const dummyAppointmentCounts = {
-    1: 2,
-    3: 1,
-    5: 4,
-    7: 3,
-    10: 2,
-    12: 5,
-    15: 1,
-    18: 3,
-    20: 2,
-    22: 4,
-    25: 1,
-    28: 2,
-  };
+  const handleSubmitPrescription = async () => {
+    if (!selectedAppointment || !prescriptionBase64) return;
 
-  // Handle clicking on a day in the calendar
-  const handleDateClick = (date) => {
-    console.log('Selected Date:', date);
-    // You can now filter appointments or load a new view based on the selected date
+    // Log the details before sending them to the API
+    console.log("Appointment ID:", selectedAppointment._id);
+    console.log("Prescription (Base64):", prescriptionBase64);
+    console.log("Doctor Notes:", doctorNotes);
+    
+    files.forEach((file, index) => {
+      console.log(`File ${index + 1}:`, file.name); // Log the uploaded file names
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append('appointmentId', selectedAppointment._id);
+      formData.append('prescription', prescriptionBase64); // Send the Base64 string
+      formData.append('doctorNotes', doctorNotes);
+
+      // Append multiple files for reports
+      files.forEach((file, index) => {
+        formData.append(`file_${index}`, file);
+      });
+
+      const response = await fetch(`${API_URL}/api/book/appointments/complete`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert('Appointment marked as completed!');
+        setAppointments(appointments.filter(app => app._id !== selectedAppointment._id));
+        setShowPopup(false);
+      } else {
+        alert('Failed to complete appointment.');
+      }
+    } catch (error) {
+      console.error('Error completing appointment:', error);
+    }
   };
 
   return (
     <>
       <DoctorNavbar />
-      <br />
-      <br />
       <div className="dashboard">
-        {/* Clickable Calendar Component */}
-        <Calendar
-          appointmentCounts={dummyAppointmentCounts}
-          onDateClick={handleDateClick}
-        />
-
         <main>
           <section className="appointments">
             <h2>Today's Appointments</h2>
@@ -200,30 +122,24 @@ const DoctorHomePage = () => {
               {appointments.length > 0 ? (
                 <ul>
                   {appointments.map((appointment) => {
-                    const { formattedDate, formattedTime } = formatDateAndTime(
-                      appointment.appointmentDate
-                    );
+                    const appointmentTime = new Date(appointment.appointmentDate);
+                    const currentTime = new Date();
+                    const isPastAppointment = currentTime >= appointmentTime;
 
                     return (
                       <li key={appointment._id} className="appointment-card">
-                        <strong>Patient:</strong> {appointment.patientName} <br />
-                        <strong>Date:</strong> {formattedDate} <br />
-                        <strong>Time:</strong> {formattedTime} <br />
-                        <strong>Symptoms:</strong> {appointment.symptoms} <br />
-                        <strong>Status:</strong> {appointment.status} <br />
+                        <div className="appointment-details">
+                          <p><strong>Patient:</strong> {appointment.patientName}</p>
+                          <p><strong>Symptoms:</strong> {appointment.symptoms}</p>
+                          <p><strong>Date:</strong> {appointmentTime.toDateString()}</p>
+                          <p><strong>Time:</strong> {appointmentTime.toLocaleTimeString()}</p>
+                        </div>
 
-                        <button
-                          className="btn confirm-btn"
-                          onClick={() => confirmAppointment(appointment._id)}
-                        >
-                          Confirm Appointment
-                        </button>
-                        <button
-                          className="btn cancel-btn"
-                          onClick={() => cancelAppointment(appointment._id)}
-                        >
-                          Cancel Appointment
-                        </button>
+                        {isPastAppointment && (
+                          <button className="btn complete-btn" onClick={() => handleCompleteClick(appointment)}>
+                            Complete
+                          </button>
+                        )}
                       </li>
                     );
                   })}
@@ -234,11 +150,60 @@ const DoctorHomePage = () => {
             </div>
           </section>
         </main>
-
         <footer>
           <p>Smart Care Scheduler © 2025</p>
         </footer>
       </div>
+
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <h3>Complete Appointment</h3>
+
+            {/* Prescription PDF input */}
+            <label>Prescription (PDF only):</label>
+            <input 
+              type="file" 
+              accept="application/pdf" 
+              onChange={handlePrescriptionChange} 
+            />
+
+            <label>Explain the Condition and Diagnosis Applied:</label>
+            <textarea 
+              value={doctorNotes} 
+              onChange={(e) => setDoctorNotes(e.target.value)}
+              placeholder="Enter any additional notes"
+            ></textarea>
+
+            <label>Reports (PDFs only):</label>
+            <input 
+              type="file" 
+              accept="application/pdf" 
+              multiple 
+              onChange={handleFileChange} 
+            />
+
+            <div className="popup-buttons">
+              <button 
+                className="btn submit-btn" 
+                onClick={handleSubmitPrescription} 
+                style={{
+                  backgroundColor: '#4CAF50',  // Green color
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  borderRadius: '5px',
+                }}
+              >
+                Mark As Completed
+              </button>
+              <button className="btn cancel-btn" onClick={() => setShowPopup(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

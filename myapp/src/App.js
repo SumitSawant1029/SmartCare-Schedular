@@ -20,6 +20,7 @@ import DoctorSignupPage from './CommonComponent/DoctorSignUp';
 import AllDoctors from './PatientCOmponent/AllDoctors';
 import BookAppointments from './PatientCOmponent/BookAppointments';
 import PastAppointments from './PatientCOmponent/PastAppointments';
+import DoctorAppointmentHistory from './DoctorComponent/DoctorAppointmentHistory';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
          <Route path="/doctorsignup" element={<DoctorSignupPage/>} />
          <Route path="/bookappointments" element={<BookAppointments/>} />
          <Route path="/pastappointments" element={<PastAppointments/>} />
+         <Route path="/Dhistoryappointments" element={<DoctorAppointmentHistory/>} />
 
 
 

@@ -1,35 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './DoctorHomePage.css';
+import './DoctorNavbar.css';
 import API_URL from '../config';
+import { FaUserCircle, FaChevronDown } from 'react-icons/fa';
+import logo from "../Asset/logoNavbarwhite.png"; // Adjust path as needed
 
 const DoctorNavbar = () => {
   const navigate = useNavigate();
   const [doctorName, setDoctorName] = useState('');
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const accountDropdownRef = useRef(null);
 
   useEffect(() => {
-    // Get email from localStorage
     const email = localStorage.getItem("email");
+
     if (email) {
-      // Make an API call to fetch doctor details using GET request
       fetch(`${API_URL}/api/auth/user?email=${encodeURIComponent(email)}`, {
-        method: 'GET', // Use GET instead of POST
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("authToken")}`, // Send token for authorization
-        },
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
       })
         .then((response) => response.json())
         .then((data) => {
           if (data.success && data.data) {
             const { firstname, lastname } = data.data;
-            setDoctorName(`${firstname} ${lastname}`); // Set the doctor's full name
+            const formattedFirstName = formatName(firstname);
+            const formattedLastName = formatName(lastname);
+            setDoctorName(`${formattedFirstName} ${formattedLastName}`);
           }
         })
         .catch((error) => console.error('Error fetching doctor details:', error));
     }
   }, []);
-  
+
+  const formatName = (name) => {
+    if (name) {
+      return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    }
+    return '';
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -37,14 +45,32 @@ const DoctorNavbar = () => {
     navigate("/"); // Redirect to home page after logout
   };
 
+  const toggleAccountDropdown = () => {
+    setIsAccountDropdownOpen(!isAccountDropdownOpen);
+  };
+
   return (
-    <header className="header">
-      <h1>Welcome, Dr. {doctorName || 'Loading...'}</h1> {/* Display doctor's name or loading text */}
-      <nav>
-        <Link to="/doctorhomepage">Home</Link>
-        <Link to="/appointments">Appointments</Link>
-        <Link to="/doctorprofile">Profile</Link>
-        <button onClick={handleLogout} className="logout-button">Logout</button>
+    <header className="navbar">
+      <div className="logo">
+        <img src={logo} alt="SmartCare Logo" />
+      </div>
+
+      <nav className="nav-links">
+        <Link to="/doctorhomepage" className="nav-item">Home</Link>
+        <Link to="/Dhistoryappointments" className="nav-item">Appointments</Link>
+
+        {/* Account Dropdown */}
+        <div className="account-dropdown">
+          <button className="dropdown-btn" onClick={toggleAccountDropdown}>
+            <FaUserCircle /> {doctorName ? doctorName : 'Loading...'} <FaChevronDown />
+          </button>
+          {isAccountDropdownOpen && (
+            <div className="dropdown-menu" ref={accountDropdownRef}>
+              <Link to="/doctorprofile" className="dropdown-item">Profile</Link>
+              <button onClick={handleLogout} className="dropdown-item">Logout</button>
+            </div>
+          )}
+        </div>
       </nav>
     </header>
   );
