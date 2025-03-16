@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import PatientNavbar from "./PatientNavbar";
 import Footer from "../CommonComponent/Footer";
 import "./BookAppointments.css";
@@ -7,7 +7,7 @@ import API_URL from "../config";
 
 const BookAppointments = () => {
   const location = useLocation();
-  // Memoize URLSearchParams so it only changes when location.search changes
+  const navigate = useNavigate();
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
 
   const [doctorEmail, setDoctorEmail] = useState("");
@@ -19,82 +19,73 @@ const BookAppointments = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
 
-  // Fetch patient details from local storage
   const patientEmail = localStorage.getItem("email");
   const patientName = localStorage.getItem("name") || "Unknown Patient";
 
-  // Set doctor email and name from URL params
   useEffect(() => {
     const email = params.get("email");
     const name = params.get("name");
-    console.log("URL Params - doctorEmail:", email, "doctorName:", name);
     setDoctorEmail(email || "No Email Provided");
     setDoctorName(name || "Unknown Doctor");
   }, [params]);
 
-  // Memoize fetchAvailableSlots to prevent re-creation on every render
   const fetchAvailableSlots = useCallback(async () => {
+    if (!doctorEmail || !appointmentDate) return;
+
     try {
+      console.log(`Fetching available slots for Dr. ${doctorName} on ${appointmentDate}...`);
+
       const response = await fetch(`${API_URL}/api/book/available-slots`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ doctorEmail, date: appointmentDate }),
       });
+
       const data = await response.json();
-      console.log("Available slots response:", data);
+      console.log("API Response:", data);
+
       if (response.ok) {
-        setAvailableSlots(data.availableSlots);
-      } else {
-        console.error("Error fetching slots:", data.message);
+        let slots = data.availableSlots;
+
+        // Get the current time
+        const now = new Date();
+        const currentHours = now.getHours();
+        const currentMinutes = now.getMinutes();
+        const currentTimeInMinutes = currentHours * 60 + currentMinutes; // Convert to minutes
+
+        // Calculate the threshold time (current time + 2 hours)
+        const minBookingTime = currentTimeInMinutes + 120;
+
+        // Convert 12-hour format slots to 24-hour format and filter
+        if (appointmentDate === new Date().toISOString().split("T")[0]) {
+          slots = slots.filter((slot) => {
+            const [hours, minutes] = slot.split(":").map(Number);
+            const slotTimeInMinutes = hours * 60 + minutes; // Convert slot to minutes
+            return slotTimeInMinutes >= minBookingTime; // Keep slots 2+ hours ahead
+          });
+        }
+
+        console.log("Filtered Slots:", slots);
+        setAvailableSlots(slots);
       }
     } catch (error) {
       console.error("Failed to fetch available slots:", error);
     }
   }, [doctorEmail, appointmentDate]);
 
-  // Fetch available slots when a valid date is selected and doctorEmail exists
   useEffect(() => {
     if (doctorEmail && appointmentDate) {
-      console.log(
-        "Fetching available slots for doctorEmail:",
-        doctorEmail,
-        "and appointmentDate:",
-        appointmentDate
-      );
       fetchAvailableSlots();
     }
   }, [appointmentDate, doctorEmail, fetchAvailableSlots]);
 
-  // Helper function to convert 12-hour time (e.g., "09:30 AM") to 24-hour format ("09:30")
-  const convertTime12to24 = (time12h) => {
-    const [time, modifier] = time12h.split(" ");
-    let [hours, minutes] = time.split(":");
-    if (modifier === "PM" && hours !== "12") {
-      hours = String(parseInt(hours, 10) + 12);
-    }
-    if (modifier === "AM" && hours === "12") {
-      hours = "00";
-    }
-    const convertedTime = `${hours.padStart(2, "0")}:${minutes}`;
-    console.log("Converted time:", time12h, "->", convertedTime);
-    return convertedTime;
-  };
-
   const handleBooking = async (e) => {
     e.preventDefault();
-    console.log("----- Handle Booking -----");
-    console.log("Patient Email:", patientEmail);
-    console.log("Doctor Email:", doctorEmail);
-    console.log("Appointment Date (raw):", appointmentDate);
-    console.log("Appointment Time (raw):", appointmentTime);
-    console.log("Symptoms:", symptoms);
-
     if (!appointmentDate || !appointmentTime || !symptoms) {
       alert("Please fill all fields");
       return;
     }
 
-    // Prevent booking for past dates
     const selectedDate = new Date(appointmentDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -103,21 +94,15 @@ const BookAppointments = () => {
       return;
     }
 
-    // Convert appointmentTime to 24-hour format
-    const appointmentTime24 = convertTime12to24(appointmentTime);
-    // Construct the ISO date string (e.g., "2025-02-15T09:30:00.000Z")
-    const bookingDateTime = `${appointmentDate}T${appointmentTime24}:00.000Z`;
-    console.log("Constructed Booking DateTime:", bookingDateTime);
-
     const bookingData = {
       patientName,
       patientEmail,
       doctorEmail,
       doctorName,
-      appointmentDate: bookingDateTime,
+      appointmentDate,
+      appointmentTime,
       symptoms,
     };
-    console.log("Booking Data:", bookingData);
 
     try {
       const response = await fetch(`${API_URL}/api/book/bookings`, {
@@ -126,20 +111,18 @@ const BookAppointments = () => {
         body: JSON.stringify(bookingData),
       });
       const data = await response.json();
-      console.log("Booking API Response:", data);
+      console.log("Booking Response:", data);
+
       if (response.ok) {
-        alert("Appointment booked successfully!");
+        setPopupMessage("Appointment booked successfully!");
+        setShowPopup(true);
+        setTimeout(() => navigate("/patienthomepage"), 2000);
       } else {
-        // Adjust message based on the backend response
-        if (data.message === "You already have an appointment on this date.") {
-          setPopupMessage("You already have an appointment on this date.");
-        } else {
-          setPopupMessage(`Error: ${data.message}`);
-        }
+        setPopupMessage(data.message || "Error booking appointment.");
         setShowPopup(true);
       }
     } catch (error) {
-      console.error("Error booking appointment:", error);
+      console.error("Booking Error:", error);
       setPopupMessage("Failed to book appointment. Check console for details.");
       setShowPopup(true);
     }
@@ -150,43 +133,50 @@ const BookAppointments = () => {
       <PatientNavbar />
       <br />
       <br />
+
+      {showPopup && (
+        <div className="popup">
+          <div className="popup-content">
+            <h3>{popupMessage.includes("successfully") ? "Success" : "Error"}</h3>
+            <p>{popupMessage}</p>
+            <button onClick={() => setShowPopup(false)}>OK</button>
+          </div>
+        </div>
+      )}
+
       <div className="booking-container">
         <div className="booking-card">
           <h2>Book an Appointment for</h2>
-          <p>
-            <strong>Dr. {doctorName}</strong>
-          </p>
+          <p><strong>Dr. {doctorName}</strong></p>
           <form onSubmit={handleBooking}>
             <div className="form-group">
               <label>Date:</label>
               <input
                 type="date"
                 value={appointmentDate}
-                onChange={(e) => {
-                  console.log("Selected date:", e.target.value);
-                  setAppointmentDate(e.target.value);
-                }}
+                onChange={(e) => setAppointmentDate(e.target.value)}
                 required
-                min={new Date().toISOString().split("T")[0]} // Restrict past dates
+                min={new Date().toISOString().split("T")[0]} 
               />
             </div>
 
             <div className="form-group">
               <label>Time:</label>
               <div className="time-slot-container">
-                {availableSlots.map((slot, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => {
-                      console.log("Selected time slot:", slot);
-                      setAppointmentTime(slot);
-                    }}
-                    className={`time-slot-button ${appointmentTime === slot ? "selected" : ""}`}
-                  >
-                    {slot}
-                  </button>
-                ))}
+                {availableSlots.length > 0 ? (
+                  availableSlots.map((slot, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setAppointmentTime(slot)}
+                      className={`time-slot-button ${appointmentTime === slot ? "selected" : ""}`}
+                    >
+                      {slot}
+                    </button>
+                  ))
+                ) : (
+                  <p>No available slots</p>
+                )}
               </div>
             </div>
 
@@ -194,10 +184,7 @@ const BookAppointments = () => {
               <label>Symptoms:</label>
               <textarea
                 value={symptoms}
-                onChange={(e) => {
-                  console.log("Symptoms input:", e.target.value);
-                  setSymptoms(e.target.value);
-                }}
+                onChange={(e) => setSymptoms(e.target.value)}
                 required
               />
             </div>
@@ -208,18 +195,6 @@ const BookAppointments = () => {
           </form>
         </div>
       </div>
-
-      {showPopup && (
-        <div className="popup">
-          <div className="popup-content">
-            <h3>Error</h3>
-            <p>{popupMessage}</p>
-            <Link to="/Alldoctors">
-              <button onClick={() => setShowPopup(false)}>OK</button>
-            </Link>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </>

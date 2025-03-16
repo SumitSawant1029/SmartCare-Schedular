@@ -7,9 +7,9 @@ const DoctorHomePage = () => {
   const [appointments, setAppointments] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [prescriptionBase64, setPrescriptionBase64] = useState(''); // Base64 string for prescription
+  const [prescriptionBase64, setPrescriptionBase64] = useState('');
   const [doctorNotes, setDoctorNotes] = useState('');
-  const [files, setFiles] = useState([]); // Array to store multiple files
+  const [files, setFiles] = useState([]); // Stores multiple PDF files
 
   const doctorEmail = localStorage.getItem('email');
 
@@ -24,11 +24,16 @@ const DoctorHomePage = () => {
 
         if (response.ok) {
           const data = await response.json();
+          console.log("Fetched Appointments:", data);
           const today = new Date().setHours(0, 0, 0, 0);
 
           const filteredAppointments = data.appointments.filter((appointment) => {
             const appointmentDate = new Date(appointment.appointmentDate).setHours(0, 0, 0, 0);
-            return appointmentDate === today;
+            return (
+              appointmentDate === today &&
+              appointment.status !== 'PCancelled' &&
+              appointment.status !== 'DCancelled'
+            );
           });
 
           setAppointments(filteredAppointments);
@@ -63,7 +68,7 @@ const DoctorHomePage = () => {
     if (file && file.type === 'application/pdf') {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPrescriptionBase64(reader.result.split(',')[1]); // Set Base64 string (excluding data URL prefix)
+        setPrescriptionBase64(reader.result.split(',')[1]); // Set Base64 string
       };
       reader.readAsDataURL(file);
     } else {
@@ -71,43 +76,49 @@ const DoctorHomePage = () => {
     }
   };
 
-  const handleSubmitPrescription = async () => {
-    if (!selectedAppointment || !prescriptionBase64) return;
-
-    // Log the details before sending them to the API
-    console.log("Appointment ID:", selectedAppointment._id);
-    console.log("Prescription (Base64):", prescriptionBase64);
-    console.log("Doctor Notes:", doctorNotes);
-    
-    files.forEach((file, index) => {
-      console.log(`File ${index + 1}:`, file.name); // Log the uploaded file names
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => resolve(reader.result.split(',')[1]); // Extract Base64
+      reader.onerror = (error) => reject(error);
     });
+  };
+
+  const handleSubmitPrescription = async () => {
+    if (!selectedAppointment || !prescriptionBase64 || files.length === 0) {
+      alert("Please upload both prescription and report.");
+      return;
+    }
 
     try {
-      const formData = new FormData();
-      formData.append('appointmentId', selectedAppointment._id);
-      formData.append('prescription', prescriptionBase64); // Send the Base64 string
-      formData.append('doctorNotes', doctorNotes);
+      const reportBase64 = await fileToBase64(files[0]); // Convert first report file to Base64
 
-      // Append multiple files for reports
-      files.forEach((file, index) => {
-        formData.append(`file_${index}`, file);
-      });
+      const payload = {
+        appointmentId: selectedAppointment.appointmentId,
+        patientEmail: selectedAppointment.patientEmail,
+        prescription: prescriptionBase64,
+        report: reportBase64, 
+        notes: doctorNotes,
+      };
 
-      const response = await fetch(`${API_URL}/api/book/appointments/complete`, {
-        method: 'POST',
-        body: formData,
+      console.log("Submitting Payload:", payload);
+
+      const response = await fetch(`${API_URL}/api/phis/addhistory`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        alert('Appointment marked as completed!');
+        alert("Appointment marked as completed!");
         setAppointments(appointments.filter(app => app._id !== selectedAppointment._id));
         setShowPopup(false);
       } else {
-        alert('Failed to complete appointment.');
+        alert("Failed to complete appointment.");
       }
     } catch (error) {
-      console.error('Error completing appointment:', error);
+      console.error("Error completing appointment:", error);
     }
   };
 
@@ -160,35 +171,25 @@ const DoctorHomePage = () => {
           <div className="popup-content">
             <h3>Complete Appointment</h3>
 
-            {/* Prescription PDF input */}
             <label>Prescription (PDF only):</label>
-            <input 
-              type="file" 
-              accept="application/pdf" 
-              onChange={handlePrescriptionChange} 
-            />
+            <input type="file" accept="application/pdf" onChange={handlePrescriptionChange} />
 
-            <label>Explain the Condition and Diagnosis Applied:</label>
+            <label>Explain the Condition and Diagnosis:</label>
             <textarea 
               value={doctorNotes} 
               onChange={(e) => setDoctorNotes(e.target.value)}
-              placeholder="Enter any additional notes"
+              placeholder="Enter additional notes"
             ></textarea>
 
             <label>Reports (PDFs only):</label>
-            <input 
-              type="file" 
-              accept="application/pdf" 
-              multiple 
-              onChange={handleFileChange} 
-            />
+            <input type="file" accept="application/pdf" multiple onChange={handleFileChange} />
 
             <div className="popup-buttons">
               <button 
                 className="btn submit-btn" 
                 onClick={handleSubmitPrescription} 
                 style={{
-                  backgroundColor: '#4CAF50',  // Green color
+                  backgroundColor: '#4CAF50',
                   color: 'white',
                   border: 'none',
                   padding: '10px 20px',

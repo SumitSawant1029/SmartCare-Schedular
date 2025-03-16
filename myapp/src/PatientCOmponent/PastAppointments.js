@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import API_URL from '../config';
 import './PastAppointments.css';
@@ -110,22 +109,29 @@ const PastAppointments = () => {
                                         <span className="status-cancelled">Cancelled by Doctor</span>
                                     ) : appointment.status === "ACancelled" ? (
                                         <span className="status-cancelled">Cancelled by Admin</span>
+                                    ) : appointment.status === "Completed" ? (
+                                        <span className="status-completed">Completed</span>
                                     ) : (
                                         <span>{appointment.status}</span>
                                     )}
 
                                     <br />
-                                    {appointment.status !== "PCancelled" && (
-                                        <button className="btn btn-danger cancel-btn" onClick={() => cancelAppointment(appointment._id)}>
-                                            Cancel Appointment
-                                        </button>
-                                    )}
+                                    {appointment.status !== "PCancelled" &&
+                                        appointment.status !== "DCancelled" &&
+                                        appointment.status !== "ACancelled" &&
+                                        appointment.status !== "Completed" && (
+                                            <button
+                                                className="btn btn-danger cancel-btn"
+                                                onClick={() => cancelAppointment(appointment._id)}
+                                            >
+                                                Cancel Appointment
+                                            </button>
+                                        )}
                                 </div>
                             </li>
                         ))
                     )}
                 </ul>
-
 
                 {showCancelModal && (
                     <div className="modal">

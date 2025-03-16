@@ -1,10 +1,16 @@
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid'); // Import UUID
 
 const BookingSchema = new mongoose.Schema(
   {
+    appointmentId: {
+      type: String,
+      unique: true, // Ensure uniqueness
+      default: uuidv4, // Automatically generate a unique ID
+    },
     patientName: {
       type: String,
-      required: true, // Ensure that patientName is required
+      required: true,
     },
     patientEmail: {
       type: String,
@@ -12,7 +18,7 @@ const BookingSchema = new mongoose.Schema(
     },
     doctorName: {
       type: String,
-      required: true, // Ensure that doctorName is required
+      required: true,
     },
     doctorEmail: {
       type: String,
@@ -24,12 +30,12 @@ const BookingSchema = new mongoose.Schema(
     },
     symptoms: {
       type: String,
-      required: true, // Description of symptoms
+      required: true,
     },
     status: {
       type: String,
-      enum: ['Confirmed', 'PCancelled','DCancelled','Completed'],
-      default: 'Confirmed', // Default status is pending
+      enum: ['Confirmed', 'PCancelled', 'DCancelled', 'Completed'],
+      default: 'Confirmed',
     },
   },
   {

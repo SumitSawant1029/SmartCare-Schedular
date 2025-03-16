@@ -56,7 +56,7 @@ router.post("/bookings", async (req, res) => {
         $gte: startOfDayUTC,
         $lt: endOfDayUTC,
       },
-      status: { $ne: "cancelled" },
+      status: { $ne: "PCancelled" },
     });
     if (existingSameDayBooking) {
       return res
@@ -68,7 +68,7 @@ router.post("/bookings", async (req, res) => {
     const existingBookingForDoctor = await Booking.findOne({
       patientEmail,
       doctorEmail,
-      status: { $ne: "cancelled" },
+      status: { $ne: "PCancelled" },
     });
     if (existingBookingForDoctor) {
       return res
@@ -280,7 +280,7 @@ router.post("/available-slots", async (req, res) => {
         $gte: appointmentDate, // Start of the day (00:00:00 UTC)
         $lt: new Date(appointmentDate.getTime() + 24 * 60 * 60 * 1000), // End of the day
       },
-      status: { $ne: "cancelled" }
+      status: {$nin: ["PCancelled", "DCancelled"] }
     });
 
     // Extract booked time slots properly in HH:MM format
@@ -422,5 +422,6 @@ router.post("/appointmentscount", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 module.exports = router;
