@@ -22,7 +22,6 @@ function DoctorRegistrationForm() {
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
 
-  // Wrap checkDoctorStatus in useCallback to stabilize it
   const checkDoctorStatus = useCallback(async (email) => {
     try {
       const response = await fetch(`${API_URL}/api/doc/check-status`, {
@@ -53,6 +52,7 @@ function DoctorRegistrationForm() {
         });
         const data = await response.json();
         if (data.success) {
+          setFormData((prevData) => ({ ...prevData, email: data.data.email }));
           checkDoctorStatus(data.data.email);
         } else {
           setLoading(false);
@@ -76,8 +76,26 @@ function DoctorRegistrationForm() {
     setStep(step - 1);
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/doc/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          profilePicture,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        alert(data.message || "Registration failed");
+      }
+    } catch (error) {
+      alert("Error submitting registration");
+    }
   };
 
   if (loading) return <p>Loading...</p>;
