@@ -41,7 +41,7 @@ const AdminNavbar = () => {
     <>
     <br/>
     <header className="header">
-      <h1>Welcome, {doctorName || 'Loading...'}</h1> {/* Display doctor's name or loading text */}
+      <h1>SmartCare Schedular , Admin</h1> {/* Display doctor's name or loading text */}
       <nav>
         <Link to="/adminhomepage">Dashboard</Link>
         <Link to="/managedoctor">Manage Doctors</Link>

@@ -1,33 +1,144 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import API_URL from "../config"; // Adjust the path if needed
+import API_URL from "../config";
 import "./AllDoctors.css";
 import PatientNavbar from "./PatientNavbar";
 
+// Full star SVG component
+const FullStar = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24">
+    <path
+      fill="gold"
+      d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.738 1.466 8.316L12 18.896l-7.402 3.874 1.466-8.316L.001 9.306l8.332-1.151z"
+    />
+  </svg>
+);
+
+// Empty star SVG component
+const EmptyStar = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24">
+    <path
+      fill="lightgray"
+      d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.738 1.466 8.316L12 18.896l-7.402 3.874 1.466-8.316L.001 9.306l8.332-1.151z"
+    />
+  </svg>
+);
+
+// Half star SVG component using a linear gradient
+const HalfStar = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="halfGradient">
+        <stop offset="50%" stopColor="gold" />
+        <stop offset="50%" stopColor="lightgray" />
+      </linearGradient>
+    </defs>
+    <path
+      fill="url(#halfGradient)"
+      d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.738 1.466 8.316L12 18.896l-7.402 3.874 1.466-8.316L.001 9.306l8.332-1.151z"
+    />
+  </svg>
+);
+
+// StarRating component that shows 5 stars based on the rating value
+const StarRating = ({ rating }) => {
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    if (rating >= i) {
+      stars.push(<FullStar key={i} />);
+    } else if (rating >= i - 0.5) {
+      stars.push(<HalfStar key={i} />);
+    } else {
+      stars.push(<EmptyStar key={i} />);
+    }
+  }
+  return <div className="star-rating">{stars}</div>;
+};
+
+// Helper function: Haversine formula to calculate distance (in km)
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 const AllDoctors = () => {
   const [doctors, setDoctors] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [filteredDoctors, setFilteredDoctors] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [userLocation, setUserLocation] = useState(null);
   const doctorsPerPage = 12;
 
-  // Fetching the list of doctors
+  // Get current user location using browser geolocation API
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+          // Optionally set a default location if needed
+        }
+      );
+    }
+  }, []);
+
+  // Fetch the list of doctors and calculate distance if user location exists
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
         const response = await fetch(`${API_URL}/api/doc/getallusers/doctor`);
         const data = await response.json();
-        setDoctors(data || []);
-        setFilteredDoctors((data || []).slice(0, doctorsPerPage)); // Show first 12 doctors
+        let doctorsWithDistance = data || [];
+
+        // If user location is available, calculate distance for each doctor
+        if (userLocation) {
+          doctorsWithDistance = doctorsWithDistance.map((doctor) => {
+            if (
+              doctor?.userDetails?.location?.coordinates &&
+              doctor.userDetails.location.coordinates.length >= 2
+            ) {
+              // GeoJSON stores coordinates as [longitude, latitude]
+              const doctorLon = doctor.userDetails.location.coordinates[0];
+              const doctorLat = doctor.userDetails.location.coordinates[1];
+              const distance = calculateDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                doctorLat,
+                doctorLon
+              );
+              return { ...doctor, distance };
+            }
+            return { ...doctor, distance: Infinity }; // If no location, assign a large distance
+          });
+          // Sort doctors by distance (closest first)
+          doctorsWithDistance.sort((a, b) => a.distance - b.distance);
+        }
+
+        setDoctors(doctorsWithDistance);
+        setFilteredDoctors(doctorsWithDistance.slice(0, doctorsPerPage));
       } catch (error) {
         console.error("Error fetching doctors:", error);
       }
     };
 
     fetchDoctors();
-  }, []);
+  }, [userLocation]);
 
-  // Handle search
+  // Handle search input
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
@@ -39,14 +150,12 @@ const AllDoctors = () => {
         doctor?.specialization?.toLowerCase().includes(term) || false;
       const experienceMatch =
         doctor?.yearsOfExperience?.toString().includes(term) || false;
-
       return nameMatch || specializationMatch || experienceMatch;
     });
-
     setFilteredDoctors(filtered.slice(0, doctorsPerPage));
   };
 
-  // Pagination handling
+  // Handle pagination
   const handlePagination = (pageNumber) => {
     setCurrentPage(pageNumber);
     const startIndex = (pageNumber - 1) * doctorsPerPage;
@@ -75,14 +184,12 @@ const AllDoctors = () => {
 
         <div className="row">
           {filteredDoctors.map((doctor) => {
-            // Extract doctor details safely
             const doctorEmail =
               doctor?.userDetails?.email || doctor?.email || "Not Available";
             const doctorName =
               doctor?.userDetails?.firstname && doctor?.userDetails?.lastname
                 ? `${doctor.userDetails.firstname} ${doctor.userDetails.lastname}`
                 : "Unknown Doctor";
-
             return (
               <div className="col-md-4 mb-4" key={doctor._id}>
                 <div className="card fixed-card">
@@ -95,7 +202,7 @@ const AllDoctors = () => {
                     alt="Doctor"
                   />
                   <div className="card-body">
-                    <h5 className="card-title">{doctorName}</h5>
+                    <h5 className="card-title">Dr. {doctorName}</h5>
                     <p className="card-text">
                       <strong>Specialization:</strong>{" "}
                       {doctor?.specialization || "N/A"}
@@ -104,7 +211,20 @@ const AllDoctors = () => {
                       <br />
                       <strong>Years of Experience:</strong>{" "}
                       {doctor?.yearsOfExperience || "N/A"}
+                      {doctor.distance !== undefined &&
+                        doctor.distance !== Infinity && (
+                          <>
+                            <br />
+                            <strong>Distance:</strong> {doctor.distance.toFixed(2)} km
+                          </>
+                        )}
                     </p>
+                    {doctor.review !== undefined && (
+                      <div>
+                        <strong>Rating:</strong>
+                        <StarRating rating={doctor.review} />
+                      </div>
+                    )}
                     {doctorEmail !== "Not Available" ? (
                       <Link
                         to={`/bookappointments?email=${encodeURIComponent(

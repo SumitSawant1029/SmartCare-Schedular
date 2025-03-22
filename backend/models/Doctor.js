@@ -32,6 +32,12 @@ const DoctorSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Default to false, meaning not approved by the admin yet
     },
+    review: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0, // You can change this default as needed
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

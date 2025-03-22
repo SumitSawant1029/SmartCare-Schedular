@@ -1,156 +1,237 @@
-import React, { useState, useEffect } from 'react';
-import API_URL from '../config';
-import './PastAppointments.css';
-import PatientNavbar from './PatientNavbar';
+import React, { useState, useEffect } from "react";
+import API_URL from "../config";
+import "./PastAppointments.css";
+import PatientNavbar from "./PatientNavbar";
+
+// Reusable Star component that renders an SVG star.
+const Star = ({ filled, onClick, onMouseEnter, onMouseLeave }) => (
+  <svg
+    onClick={onClick}
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+    width="32"
+    height="32"
+    viewBox="0 0 24 24"
+    style={{ cursor: "pointer" }}
+  >
+    <path
+      fill={filled ? "gold" : "lightgray"}
+      d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.738 1.466 8.316L12 18.896l-7.402 3.874 1.466-8.316L.001 9.306l8.332-1.151z"
+    />
+  </svg>
+);
 
 const PastAppointments = () => {
-    const [appointments, setAppointments] = useState([]);
-    const [showCancelModal, setShowCancelModal] = useState(false);
-    const [appointmentToCancel, setAppointmentToCancel] = useState(null);
-    const patientEmail = localStorage.getItem('email');
+  const [appointments, setAppointments] = useState([]);
+  const [reviews, setReviews] = useState({}); // Store ratings and texts keyed by appointmentId
+  const [hoverRating, setHoverRating] = useState({}); // For hover effect keyed by appointmentId
+  const [reviewOpenFor, setReviewOpenFor] = useState(null); // Which appointment's review form is open
+  const patientEmail = localStorage.getItem("email");
 
-    useEffect(() => {
-        const fetchAppointments = async () => {
-            try {
-                const response = await fetch(`${API_URL}/api/book/appointments/patient`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ patientEmail }),
-                });
-
-                const data = await response.json();
-                if (data.appointments) {
-                    // Sorting appointments by updatedAt (latest first)
-                    const sortedAppointments = data.appointments.sort(
-                        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-                    );
-                    setAppointments(sortedAppointments);
-                } else {
-                    console.error('Failed to fetch appointments');
-                }
-            } catch (error) {
-                console.error('Error fetching appointments:', error);
-            }
-        };
-
-        fetchAppointments();
-    }, [patientEmail]);
-
-    const cancelAppointment = (appointmentId) => {
-        setAppointmentToCancel(appointmentId);
-        setShowCancelModal(true);
-    };
-
-    const confirmCancel = async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/book/bookings/cancel`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: appointmentToCancel }),
-            });
-
-            if (response.ok) {
-                setAppointments(appointments.filter((appointment) => appointment._id !== appointmentToCancel));
-                setShowCancelModal(false);
-            } else {
-                alert('Failed to cancel appointment');
-            }
-        } catch (error) {
-            console.error('Error canceling appointment:', error);
-            alert('Error canceling appointment');
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/book/appointments/patient`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ patientEmail }),
+        });
+        const data = await response.json();
+        console.log("Fetched appointments:", data);
+        if (data.appointments) {
+          const sortedAppointments = data.appointments.sort(
+            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+          );
+          setAppointments(sortedAppointments);
+        } else {
+          console.error("Failed to fetch appointments");
         }
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+      }
     };
 
-    const closeCancelModal = () => {
-        setShowCancelModal(false);
-        setAppointmentToCancel(null);
+    fetchAppointments();
+  }, [patientEmail]);
+
+  // Update hover rating for an appointment (using appointmentId as key)
+  const handleStarHover = (appointmentId, starValue) => {
+    setHoverRating((prev) => ({
+      ...prev,
+      [appointmentId]: starValue,
+    }));
+  };
+
+  // Clear hover rating when leaving
+  const handleStarLeave = (appointmentId) => {
+    setHoverRating((prev) => ({
+      ...prev,
+      [appointmentId]: undefined,
+    }));
+  };
+
+  // Save the selected star rating
+  const handleStarClick = (appointmentId, starValue) => {
+    setReviews((prev) => ({
+      ...prev,
+      [appointmentId]: { ...prev[appointmentId], rating: starValue },
+    }));
+  };
+
+  // Handle review text input changes
+  const handleReviewChange = (appointmentId, value) => {
+    setReviews((prev) => ({
+      ...prev,
+      [appointmentId]: { ...prev[appointmentId], text: value },
+    }));
+  };
+
+  // Submit the review with added debugging steps
+  const submitReview = async (appointmentId, doctorEmail, patientEmailParam) => {
+    const { rating, text } = reviews[appointmentId] || {};
+    if (!rating) {
+      alert("Please select a star rating.");
+      return;
+    }
+
+    const payload = {
+      appointmentId,
+      doctorEmail,
+      rating,
+      text,
+      patientEmail: patientEmailParam,
     };
 
-    const formatDate = (dateString) => {
-        const dateObj = new Date(dateString);
-        return dateObj.toISOString().split('T')[0]; // YYYY-MM-DD format
-    };
+    console.log("Submitting review with payload:", payload);
 
-    const formatTime = (dateString) => {
-        const dateObj = new Date(dateString);
-        return dateObj.toISOString().split('T')[1].substring(0, 5); // HH:MM format
-    };
+    try {
+      const response = await fetch(`${API_URL}/api/doc/reviews/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    return (
-        <>
-            <PatientNavbar />
-            <br />
-            <br />
-            <br />
-            <br />
-            <div className="appointments-container">
-                <h2>Your Appointments</h2>
-                <ul>
-                    {appointments.length === 0 ? (
-                        <li>No appointments scheduled</li>
+      console.log("Response status:", response.status);
+
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log("Response data:", responseData);
+        alert("Review submitted successfully!");
+        setReviewOpenFor(null);
+      } else {
+        // Log the error response text for debugging
+        const errorData = await response.text();
+        console.error("Failed to submit review. Response:", errorData);
+        alert("Failed to submit review.");
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("Error submitting review.");
+    }
+  };
+
+  return (
+    <>
+      <PatientNavbar />
+      <div className="appointments-container">
+        <h2>Your Appointments</h2>
+        <ul>
+          {appointments.length === 0 ? (
+            <li>No appointments scheduled</li>
+          ) : (
+            appointments.map((appointment) => {
+              // Use appointment.appointmentId as the key
+              const id = appointment.appointmentId;
+              const doctorEmail = appointment.doctorEmail;
+              const patientEmailFromAppointment = appointment.patientEmail;
+              const doctorName =
+                appointment.doctorName ||
+                (appointment.userDetails &&
+                  `${appointment.userDetails.firstname} ${appointment.userDetails.lastname}`) ||
+                "Unknown Doctor";
+
+              return (
+                <li key={id} className={`appointment-card ${appointment.status}`}>
+                  <span className="updated-at">
+                    Updated: {new Date(appointment.updatedAt).toLocaleDateString()}
+                  </span>
+                  <div className="appointment-details">
+                    <strong>Doctor:</strong> Dr. {doctorName} <br />
+                    <strong>Date:</strong> {new Date(appointment.appointmentDate).toLocaleDateString()} <br />
+                    <strong>Time:</strong>{" "}
+                    {new Date(appointment.appointmentDate).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}{" "}
+                    <br />
+                    <strong>Symptoms:</strong> {appointment.symptoms} <br />
+                    <strong>Status:</strong>{" "}
+                    {appointment.status === "Completed" ? (
+                      <span className="status-completed">Completed</span>
                     ) : (
-                        appointments.map((appointment) => (
-                            <li key={appointment._id} className={`appointment-card ${appointment.status}`}>
-                                <span className="updated-at">Updated: {formatDate(appointment.updatedAt)}</span>
-
-                                <div className="appointment-details">
-                                    <strong>Doctor: </strong> Dr. {appointment.doctorName} <br />
-                                    <strong>Date:</strong> {formatDate(appointment.appointmentDate)} <br />
-                                    <strong>Time:</strong> {formatTime(appointment.appointmentDate)} <br />
-                                    <strong>Symptoms:</strong> {appointment.symptoms} <br />
-                                    <strong>Status:</strong>
-                                    {appointment.status === "PCancelled" ? (
-                                        <span className="status-cancelled">Cancelled by You</span>
-                                    ) : appointment.status === "DCancelled" ? (
-                                        <span className="status-cancelled">Cancelled by Doctor</span>
-                                    ) : appointment.status === "ACancelled" ? (
-                                        <span className="status-cancelled">Cancelled by Admin</span>
-                                    ) : appointment.status === "Completed" ? (
-                                        <span className="status-completed">Completed</span>
-                                    ) : (
-                                        <span>{appointment.status}</span>
-                                    )}
-
-                                    <br />
-                                    {appointment.status !== "PCancelled" &&
-                                        appointment.status !== "DCancelled" &&
-                                        appointment.status !== "ACancelled" &&
-                                        appointment.status !== "Completed" && (
-                                            <button
-                                                className="btn btn-danger cancel-btn"
-                                                onClick={() => cancelAppointment(appointment._id)}
-                                            >
-                                                Cancel Appointment
-                                            </button>
-                                        )}
-                                </div>
-                            </li>
-                        ))
+                      <span>{appointment.status}</span>
                     )}
-                </ul>
+                    <br />
 
-                {showCancelModal && (
-                    <div className="modal">
-                        <div className="modal-content">
-                            <h3>Are you sure you want to cancel this appointment?</h3>
-                            <div className="modal-buttons">
-                                <button onClick={confirmCancel} className="btn btn-danger">
-                                    Yes, Cancel Appointment
-                                </button>
-                                <button onClick={closeCancelModal} className="btn btn-secondary">
-                                    No, Keep Appointment
-                                </button>
+                    {appointment.status === "Completed" && (
+                      <div className="review-section">
+                        {reviewOpenFor !== id ? (
+                          <button
+                            onClick={() => setReviewOpenFor(id)}
+                            className="btn btn-secondary"
+                          >
+                            Give Review
+                          </button>
+                        ) : (
+                          <>
+                            <div className="star-rating">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  filled={
+                                    (hoverRating[id] ||
+                                      reviews[id]?.rating ||
+                                      0) >= star
+                                  }
+                                  onMouseEnter={() => handleStarHover(id, star)}
+                                  onMouseLeave={() => handleStarLeave(id)}
+                                  onClick={() => handleStarClick(id, star)}
+                                />
+                              ))}
                             </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </>
-    );
+                            <textarea
+                              placeholder="Write your feedback..."
+                              value={reviews[id]?.text || ""}
+                              onChange={(e) => handleReviewChange(id, e.target.value)}
+                            />
+                            <button
+                              onClick={() =>
+                                submitReview(
+                                  id,
+                                  doctorEmail,
+                                  patientEmailFromAppointment || patientEmail
+                                )
+                              }
+                              className="btn btn-primary"
+                            >
+                              Submit Review
+                            </button>
+                            <button onClick={() => setReviewOpenFor(null)} className="btn btn-secondary">
+                              Cancel
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })
+          )}
+        </ul>
+      </div>
+    </>
+  );
 };
 
 export default PastAppointments;

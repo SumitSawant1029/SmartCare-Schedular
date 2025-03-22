@@ -5,6 +5,8 @@ const Doctor = require('../models/Doctor');
 const fetchuser = require('../middleware/fetchuser'); // Admin authentication middleware
 const DoctorAvailability = require('../models/DoctorAvailability');
 const User =require('../models/User');
+const Review = require('../models/Review');
+const Booking = require('../models/Booking');
 // ROUTE 1: Register a new Doctor using: POST "/api/doctor/register"
 router.post(
   '/register',
@@ -55,7 +57,6 @@ router.post(
     }
   }
 );
-
 // ROUTE 2: Get Doctor Details using: GET "/api/doctor/:email"
 router.get('/details/:email', async (req, res) => {
   const { email } = req.params;
@@ -85,7 +86,6 @@ router.get('/details/:email', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 // ROUTE 3: Get All Doctors using: GET "/api/doctor/all"
 router.get('/all', async (req, res) => {
   try {
@@ -99,7 +99,6 @@ router.get('/all', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 // ROUTE 4: Approve Doctor by Admin using: PUT "/api/doctor/approve/:email"
 router.put('/approve/:email', fetchuser, async (req, res) => {
   const { email } = req.params;
@@ -125,7 +124,6 @@ router.put('/approve/:email', fetchuser, async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 // ROUTE 5: Update Doctor Details using: PUT "/api/doctor/update/:email"
 router.put('/update/:email', fetchuser, async (req, res) => {
   const { email } = req.params;
@@ -152,7 +150,6 @@ router.put('/update/:email', fetchuser, async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 // ROUTE 6: Delete Doctor by Admin using: DELETE "/api/doctor/delete/:email"
 router.delete('/delete/:email', fetchuser, async (req, res) => {
   const { email } = req.params;
@@ -197,8 +194,6 @@ router.post("/check-status", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error." });
   }
 });
-
-
 // API to create or update doctor's availability
 router.post('/availability', async (req, res) => {
   try {
@@ -237,8 +232,6 @@ router.post('/availability', async (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-
 // Fetch doctor's availability (GET)
 router.post('/availability/fetch', async (req, res) => {
   try {
@@ -260,7 +253,6 @@ router.post('/availability/fetch', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 // Update or create availability (POST)
 router.post('/availability/update', async (req, res) => {
   try {
@@ -299,8 +291,6 @@ router.post('/availability/update', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-
 // Remove a specific slot (DELETE)
 router.post('/availability/remove', async (req, res) => {
   try {
@@ -334,7 +324,6 @@ router.post('/availability/remove', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 
 router.post('/availability/check', async (req, res) => {
   try {
@@ -386,7 +375,6 @@ router.get('/getallusers/doctor', async (req, res) => {
   }
 });
 
-
 router.post('/approve', async (req, res) => {
   try {
     const { doctorId } = req.body; // Extract doctor ID from body
@@ -408,8 +396,6 @@ router.post('/approve', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
-
 // Route 1: Initially to generate doctor appointment 
 router.post('/setAvailability', async (req, res) => {
   const { doctorEmail } = req.body;
@@ -462,7 +448,6 @@ router.post('/setAvailability', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 // ✅ Allow Slots API
 router.post('/allow-slots', async (req, res) => {
   const { doctorEmail, slots } = req.body;
@@ -488,7 +473,6 @@ router.post('/allow-slots', async (req, res) => {
       res.status(500).json({ error: "Internal server error" });
   }
 });
-
 // ✅ Disallow Slots API
 router.post('/disallow-slots', async (req, res) => {
   const { doctorEmail, slots } = req.body;
@@ -514,8 +498,6 @@ router.post('/disallow-slots', async (req, res) => {
       res.status(500).json({ error: "Internal server error" });
   }
 });
-
-
 // ✅ Get Allowed and Not Allowed Slots API
 router.post('/get-slots', async (req, res) => {
   const { doctorEmail } = req.body;
@@ -553,7 +535,62 @@ router.post('/get-slots', async (req, res) => {
   }
 });
 
+router.post('/reviews/submit', async (req, res) => {
+  const { doctorEmail, patientEmail, rating, text, appointmentId } = req.body;
+  
+  // Convert the rating to a number
+  const ratingValue = parseFloat(rating);
+  if (isNaN(ratingValue)) {
+    return res.status(400).json({ message: 'Invalid rating value' });
+  }
 
+  try {
+    // Find the doctor by email
+    const doctor = await Doctor.findOne({ email: doctorEmail });
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
 
+    // Simple average calculation:
+    if (doctor.review === 0) {
+      doctor.review = ratingValue;
+      doctor.reviewCount = 1;
+    } else {
+      doctor.review = (doctor.review + ratingValue) / 2;
+    }
+
+    await doctor.save();
+
+    // Create a new review document
+    const newReview = await Review.create({
+      doctorEmail,
+      patientEmail,
+      rating: ratingValue,
+      text,
+    });
+
+    // If an appointmentId is provided, update the appointment to mark it as reviewed.
+    if (appointmentId) {
+      const updateResult = await Booking.findOneAndUpdate(
+        { appointmentId },
+        { reviewed: true },
+        { new: true }
+      );
+      console.log("Appointment update result:", updateResult);
+      if (!updateResult) {
+        console.warn("No appointment found with appointmentId:", appointmentId);
+      }
+    }
+
+    res.status(201).json({
+      message: 'Review submitted successfully',
+      review: newReview,
+      doctor: { email: doctor.email, review: doctor.review }
+    });
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    res.status(500).json({ message: 'Error submitting review' });
+  }
+});
 
 module.exports = router;

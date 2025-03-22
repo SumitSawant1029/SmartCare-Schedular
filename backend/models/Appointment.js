@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({
   appointmentId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     required: true,
     unique: true,
   },

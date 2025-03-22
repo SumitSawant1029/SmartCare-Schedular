@@ -57,7 +57,6 @@ router.post('/getuserdetails', fetchuser, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
-
 // Update user creation route to generate and return authtoken
 router.post('/createuser',
   [
@@ -126,9 +125,6 @@ router.post('/createuser',
     }
   }
 );
-
-
-
 // ROUTE 2: Send OTP to email using: POST "/api/auth/sendotp"
 router.post('/sendotp', async (req, res) => {
   const { email } = req.body;
@@ -206,9 +202,6 @@ router.post('/verifyotp', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
-
-
 // ROUTE 4: Authenticate a User using: POST "/api/auth/login". No OTP required
 router.post('/login', [
   body('email', 'Enter a valid email').isEmail(),
@@ -253,7 +246,6 @@ router.post('/login', [
     res.status(500).send("Internal Server Error");
   }
 });
-
 // ROUTE 5: Get loggedin User Details using: POST "/api/auth/getuser". Login required
 router.get('/getallusers', async (req, res) => {
   try {
@@ -264,6 +256,7 @@ router.get('/getallusers', async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
 router.get("/user", async (req, res) => {
   const { email } = req.query; // Extract email from query parameters
 
