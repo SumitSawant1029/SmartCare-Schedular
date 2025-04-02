@@ -26,6 +26,7 @@ const PastAppointments = () => {
   const [reviews, setReviews] = useState({}); // Store ratings and texts keyed by appointmentId
   const [hoverRating, setHoverRating] = useState({}); // For hover effect keyed by appointmentId
   const [reviewOpenFor, setReviewOpenFor] = useState(null); // Which appointment's review form is open
+  const [canceling, setCanceling] = useState(null); // Store appointmentId that's being cancelled
   const patientEmail = localStorage.getItem("email");
 
   useEffect(() => {
@@ -119,7 +120,6 @@ const PastAppointments = () => {
         alert("Review submitted successfully!");
         setReviewOpenFor(null);
       } else {
-        // Log the error response text for debugging
         const errorData = await response.text();
         console.error("Failed to submit review. Response:", errorData);
         alert("Failed to submit review.");
@@ -127,6 +127,38 @@ const PastAppointments = () => {
     } catch (error) {
       console.error("Error submitting review:", error);
       alert("Error submitting review.");
+    }
+  };
+
+  // Cancel appointment function for frontend
+  const handleCancel = async (appointmentMongoId) => {
+    setCanceling(appointmentMongoId);
+    try {
+      const response = await fetch(`${API_URL}/api/book/bookings/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: appointmentMongoId }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message);
+        // Update the appointment's status locally
+        setAppointments((prev) =>
+          prev.map((appt) =>
+            appt._id === appointmentMongoId
+              ? { ...appt, status: "Cancelled" }
+              : appt
+          )
+        );
+      } else {
+        const errorText = await response.text();
+        alert("Error cancelling appointment: " + errorText);
+      }
+    } catch (error) {
+      console.error("Error cancelling appointment:", error);
+      alert("Error cancelling appointment.");
+    } finally {
+      setCanceling(null);
     }
   };
 
@@ -140,7 +172,7 @@ const PastAppointments = () => {
             <li>No appointments scheduled</li>
           ) : (
             appointments.map((appointment) => {
-              // Use appointment.appointmentId as the key
+              // Use appointment.appointmentId for display, but use _id for cancellation
               const id = appointment.appointmentId;
               const doctorEmail = appointment.doctorEmail;
               const patientEmailFromAppointment = appointment.patientEmail;
@@ -149,6 +181,14 @@ const PastAppointments = () => {
                 (appointment.userDetails &&
                   `${appointment.userDetails.firstname} ${appointment.userDetails.lastname}`) ||
                 "Unknown Doctor";
+              const appointmentTime = new Date(appointment.appointmentDate);
+              const currentTime = new Date();
+              const hoursDifference =
+                (appointmentTime - currentTime) / (1000 * 60 * 60);
+              
+              // Conditions for showing the Cancel button:
+              const canCancel =
+                appointment.status === "Confirmed" && hoursDifference >= 24;
 
               return (
                 <li key={id} className={`appointment-card ${appointment.status}`}>
@@ -157,9 +197,10 @@ const PastAppointments = () => {
                   </span>
                   <div className="appointment-details">
                     <strong>Doctor:</strong> Dr. {doctorName} <br />
-                    <strong>Date:</strong> {new Date(appointment.appointmentDate).toLocaleDateString()} <br />
+                    <strong>Date:</strong>{" "}
+                    {appointmentTime.toLocaleDateString()} <br />
                     <strong>Time:</strong>{" "}
-                    {new Date(appointment.appointmentDate).toLocaleTimeString([], {
+                    {appointmentTime.toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}{" "}
@@ -170,10 +211,22 @@ const PastAppointments = () => {
                       <span className="status-completed">Completed</span>
                     ) : (
                       <span>{appointment.status}</span>
-                    )}
+                    )} 
                     <br />
 
-                    {appointment.status === "Completed" && (
+                    {/* Show Cancel button if appointment is confirmed and at least 24 hours away */}
+                    {canCancel && (
+                      <button
+                        onClick={() => handleCancel(appointment._id)}
+                        className="btn btn-secondary"
+                        disabled={canceling === appointment._id}
+                      >
+                        {canceling === appointment._id ? "Cancelling..." : "Cancel Appointment"}
+                      </button>
+                    )}
+
+                    {/* Review Section for Completed appointments */}
+                    {appointment.status === "Completed" && !appointment.reviewed && (
                       <div className="review-section">
                         {reviewOpenFor !== id ? (
                           <button
@@ -189,9 +242,7 @@ const PastAppointments = () => {
                                 <Star
                                   key={star}
                                   filled={
-                                    (hoverRating[id] ||
-                                      reviews[id]?.rating ||
-                                      0) >= star
+                                    (hoverRating[id] || reviews[id]?.rating || 0) >= star
                                   }
                                   onMouseEnter={() => handleStarHover(id, star)}
                                   onMouseLeave={() => handleStarLeave(id)}
@@ -216,7 +267,10 @@ const PastAppointments = () => {
                             >
                               Submit Review
                             </button>
-                            <button onClick={() => setReviewOpenFor(null)} className="btn btn-secondary">
+                            <button
+                              onClick={() => setReviewOpenFor(null)}
+                              className="btn btn-secondary"
+                            >
                               Cancel
                             </button>
                           </>
