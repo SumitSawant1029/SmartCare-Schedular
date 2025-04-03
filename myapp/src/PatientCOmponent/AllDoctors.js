@@ -77,6 +77,10 @@ const AllDoctors = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [userLocation, setUserLocation] = useState(null);
   const doctorsPerPage = 12;
+  
+  // New state variables for additional filters
+  const [selectedSpecialization, setSelectedSpecialization] = useState("");
+  const [selectedReview, setSelectedReview] = useState("");
 
   // Get current user location using browser geolocation API
   useEffect(() => {
@@ -138,22 +142,41 @@ const AllDoctors = () => {
     fetchDoctors();
   }, [userLocation]);
 
-  // Handle search input
+  // Handle search input (only updating search term now)
   const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
+    setSearchTerm(e.target.value);
+  };
 
-    const filtered = doctors.filter((doctor) => {
-      const nameMatch =
-        doctor?.userDetails?.firstname?.toLowerCase().includes(term) || false;
-      const specializationMatch =
-        doctor?.specialization?.toLowerCase().includes(term) || false;
-      const experienceMatch =
-        doctor?.yearsOfExperience?.toString().includes(term) || false;
-      return nameMatch || specializationMatch || experienceMatch;
+  // New handlers for additional filters
+  const handleSpecializationChange = (e) => {
+    setSelectedSpecialization(e.target.value);
+  };
+
+  const handleReviewChange = (e) => {
+    setSelectedReview(e.target.value);
+  };
+
+  // Use useEffect to apply all filters (search, specialization, review) whenever they change
+  useEffect(() => {
+    let filtered = doctors.filter((doctor) => {
+      const term = searchTerm.toLowerCase();
+      const firstName = doctor?.userDetails?.firstname?.toLowerCase() || "";
+      const lastName = doctor?.userDetails?.lastname?.toLowerCase() || "";
+      const specialization = doctor?.specialization?.toLowerCase() || "";
+      const experience = doctor?.yearsOfExperience?.toString() || "";
+      const nameMatch = firstName.includes(term) || lastName.includes(term);
+      const specializationMatch = specialization.includes(term);
+      const experienceMatch = experience.includes(term);
+      const searchMatch = nameMatch || specializationMatch || experienceMatch;
+      
+      // Check additional filters if selected
+      const specializationFilter = selectedSpecialization ? doctor.specialization === selectedSpecialization : true;
+      const reviewFilter = selectedReview ? (doctor.review !== undefined && doctor.review >= parseFloat(selectedReview)) : true;
+      
+      return searchMatch && specializationFilter && reviewFilter;
     });
     setFilteredDoctors(filtered.slice(0, doctorsPerPage));
-  };
+  }, [searchTerm, selectedSpecialization, selectedReview, doctors, doctorsPerPage]);
 
   // Handle pagination
   const handlePagination = (pageNumber) => {
@@ -170,6 +193,7 @@ const AllDoctors = () => {
       <br />
       <br />
       <div className="container mt-4">
+        {/* Existing Search Bar Row */}
         <div className="row mb-4">
           <div className="col-md-6 offset-md-3">
             <input
@@ -179,6 +203,27 @@ const AllDoctors = () => {
               value={searchTerm}
               onChange={handleSearch}
             />
+          </div>
+        </div>
+        {/* New Filters Row */}
+        <div className="row mb-4">
+          <div className="col-md-6">
+            <select className="form-control" value={selectedSpecialization} onChange={handleSpecializationChange}>
+              <option value="">All Specializations</option>
+              <option value="Cardiologist">Cardiologist</option>
+              <option value="Dentist">Dentist</option>
+              <option value="Dermatologist">Dermatologist</option>
+              <option value="Neurologist">Neurologist</option>
+              {/* Add more specializations as needed */}
+            </select>
+          </div>
+          <div className="col-md-6">
+            <select className="form-control" value={selectedReview} onChange={handleReviewChange}>
+              <option value="">All Reviews</option>
+              <option value="4">4+ Stars</option>
+              <option value="3">3+ Stars</option>
+              <option value="2">2+ Stars</option>
+            </select>
           </div>
         </div>
 
@@ -203,25 +248,15 @@ const AllDoctors = () => {
                   />
                   <div className="card-body">
                     <h5 className="card-title">Dr. {doctorName}</h5>
-                    <p className="card-text">
-                      <strong>Specialization:</strong>{" "}
-                      {doctor?.specialization || "N/A"}
+                    <p className="card-text" style={{ fontSize: "0.85rem" }}>
+                      <strong>Specialization:</strong> {doctor?.specialization || "N/A"}
                       <br />
                       <strong>Hospital:</strong> {doctor?.hospital || "N/A"}
                       <br />
-                      <strong>Years of Experience:</strong>{" "}
-                      {doctor?.yearsOfExperience || "N/A"}
-                      {doctor.distance !== undefined &&
-                        doctor.distance !== Infinity && (
-                          <>
-                            <br />
-                            <strong>Distance:</strong> {doctor.distance.toFixed(2)} km
-                          </>
-                        )}
+                      <strong>Years of Experience:</strong> {doctor?.yearsOfExperience || "N/A"}
                     </p>
                     {doctor.review !== undefined && (
                       <div>
-                        <strong>Rating:</strong>
                         <StarRating rating={doctor.review} />
                       </div>
                     )}

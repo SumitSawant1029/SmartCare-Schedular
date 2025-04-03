@@ -51,7 +51,8 @@ const PatientHomePage = () => {
           <section className="disease-cards-container">
             <h2>Select a Category</h2>
             <div className="disease-cards">
-              {[{ name: "Lung", img: lung, desc: "Respiratory issues like asthma, bronchitis, and COPD." },
+              {[
+                { name: "Lung", img: lung, desc: "Respiratory issues like asthma, bronchitis, and COPD." },
                 { name: "Brain", img: brain, desc: "Neurological conditions such as migraines and epilepsy." },
                 { name: "Cancer", img: cancer, desc: "Oncology specialists for early detection and treatment." },
                 { name: "Heart", img: heart, desc: "Cardiac diseases like heart attacks, hypertension, and heart failure." },

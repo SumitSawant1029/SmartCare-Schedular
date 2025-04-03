@@ -22,6 +22,7 @@ import BookAppointments from './PatientCOmponent/BookAppointments';
 import PastAppointments from './PatientCOmponent/PastAppointments';
 import DoctorAppointmentHistory from './DoctorComponent/DoctorAppointmentHistory';
 import PatientRecords from './DoctorComponent/PatientRecords';
+import PatientProfile from './PatientCOmponent/PatientProfile';
 function App() {
   return (
     <Router>
@@ -46,7 +47,7 @@ function App() {
          <Route path="/pastappointments" element={<PastAppointments/>} />
          <Route path="/Dhistoryappointments" element={<DoctorAppointmentHistory/>} />
          <Route path="/patient-records/:patientEmail" element={<PatientRecords />} />
-
+         <Route path="/patientprofile" element={<PatientProfile />} />
 
         </Routes>
       </div>
