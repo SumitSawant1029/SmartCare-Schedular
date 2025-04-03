@@ -79,54 +79,77 @@ const BookAppointments = () => {
     }
   }, [appointmentDate, doctorEmail, fetchAvailableSlots]);
 
-  const handleBooking = async (e) => {
-    e.preventDefault();
-    if (!appointmentDate || !appointmentTime || !symptoms) {
-      alert("Please fill all fields");
-      return;
+// Inside handleBooking function (updated section only)
+
+const handleBooking = async (e) => {
+  e.preventDefault();
+
+  if (!appointmentDate || !appointmentTime || !symptoms) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  const selectedDate = new Date(appointmentDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (selectedDate < today) {
+    alert("You cannot select a past date.");
+    return;
+  }
+
+  // 🧠 Pad time to HH:mm
+  const [hour, minute] = appointmentTime.split(":");
+  const paddedHour = hour.padStart(2, "0");
+  const paddedTime = `${paddedHour}:${minute}`;
+
+  let combinedDateTime;
+  try {
+    combinedDateTime = new Date(`${appointmentDate}T${paddedTime}:00`);
+    if (isNaN(combinedDateTime.getTime())) {
+      throw new Error("Invalid combined datetime");
     }
+  } catch (err) {
+    console.error("Error creating datetime:", err);
+    alert("Invalid date or time selected. Please try again.");
+    return;
+  }
 
-    const selectedDate = new Date(appointmentDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (selectedDate < today) {
-      alert("You cannot select a past date.");
-      return;
-    }
+  const bookingData = {
+    patientName,
+    patientEmail,
+    doctorEmail,
+    doctorName,
+    appointmentDate: combinedDateTime,
+    symptoms,
+  };
 
-    const bookingData = {
-      patientName,
-      patientEmail,
-      doctorEmail,
-      doctorName,
-      appointmentDate,
-      appointmentTime,
-      symptoms,
-    };
+  try {
+    const response = await fetch(`${API_URL}/api/book/bookings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bookingData),
+    });
 
-    try {
-      const response = await fetch(`${API_URL}/api/book/bookings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bookingData),
-      });
-      const data = await response.json();
-      console.log("Booking Response:", data);
+    const data = await response.json();
+    console.log("Booking Response:", data);
 
-      if (response.ok) {
-        setPopupMessage("Appointment booked successfully!");
-        setShowPopup(true);
-        setTimeout(() => navigate("/patienthomepage"), 2000);
-      } else {
-        setPopupMessage(data.message || "Error booking appointment.");
-        setShowPopup(true);
-      }
-    } catch (error) {
-      console.error("Booking Error:", error);
-      setPopupMessage("Failed to book appointment. Check console for details.");
+    if (response.ok) {
+      setPopupMessage("Appointment booked successfully!");
+      setShowPopup(true);
+      setTimeout(() => navigate("/patienthomepage"), 2000);
+    } else {
+      setPopupMessage(data.message || "Error booking appointment.");
       setShowPopup(true);
     }
-  };
+  } catch (error) {
+    console.error("Booking Error:", error);
+    setPopupMessage("Failed to book appointment. Check console for details.");
+    setShowPopup(true);
+  }
+};
+
+
 
   return (
     <>

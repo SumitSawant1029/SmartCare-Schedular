@@ -77,17 +77,18 @@ const DoctorAppointmentHistory = () => {
 
   const formatDateAndTime = (dateString) => {
     const appointmentDate = new Date(dateString);
-    const day = appointmentDate.getUTCDate();
-    const month = appointmentDate.getUTCMonth() + 1;
-    const year = appointmentDate.getUTCFullYear();
-    const hours = appointmentDate.getUTCHours();
-    const minutes = appointmentDate.getUTCMinutes();
-    const seconds = appointmentDate.getUTCSeconds();
+    const day = appointmentDate.getDate();
+    const month = appointmentDate.getMonth() + 1;
+    const year = appointmentDate.getFullYear();
+    const hours = appointmentDate.getHours();
+    const minutes = appointmentDate.getMinutes();
+    const seconds = appointmentDate.getSeconds();
     const timePeriod = hours >= 12 ? 'PM' : 'AM';
     const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
     const formattedTime = `${(hours % 12 || 12).toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${timePeriod}`;
     return { formattedDate, formattedTime };
   };
+  
 
   const getStatusClassName = (status) => {
     if (status === 'PCancelled' || status === 'DCancelled') {

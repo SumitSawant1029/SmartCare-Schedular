@@ -226,7 +226,8 @@ const PastAppointments = () => {
                     )}
 
                     {/* Review Section for Completed appointments */}
-                    {appointment.status === "Completed" && !appointment.reviewed && (
+                    {appointment.status === "Completed" && appointment.reviewed !== true && appointment.reviewed !== "true" && (
+
                       <div className="review-section">
                         {reviewOpenFor !== id ? (
                           <button
