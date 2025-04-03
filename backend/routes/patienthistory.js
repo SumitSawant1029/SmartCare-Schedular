@@ -52,11 +52,15 @@ router.post('/addhistory', async (req, res) => {
 });
 
 // Get Ids of History based on email
+// Get Ids of History based on email
 router.post('/getHistoryIds', async (req, res) => {
   try {
     const { patientEmail } = req.body;
 
+    console.log(`🔍 Received request for patientEmail: ${patientEmail}`);
+
     if (!patientEmail) {
+      console.log("❌ Error: Patient email is missing in request body");
       return res.status(400).json({ message: 'Patient email is required' });
     }
 
@@ -65,33 +69,46 @@ router.post('/getHistoryIds', async (req, res) => {
       .select('appointmentId createdAt -_id'); // createdAt serves as timestamp
 
     if (!histories || histories.length === 0) {
+      console.log(`⚠️ No history found for patientEmail: ${patientEmail}`);
       return res.status(404).json({ message: 'No history found for this patient' });
     }
 
+    console.log(`✅ Found ${histories.length} history records for patientEmail: ${patientEmail}`);
+
     // Extract appointment IDs
     const appointmentIds = histories.map(history => history.appointmentId);
+    console.log(`🔗 Appointment IDs:`, appointmentIds);
 
     // Fetch appointment details (appointmentDate) from Booking model
     const bookings = await Booking.find({ appointmentId: { $in: appointmentIds } })
       .select('appointmentId appointmentDate -_id');
 
+    console.log(`✅ Found ${bookings.length} matching bookings for the appointment IDs`);
+
     // Merge histories with their corresponding appointment dates
     const appointmentData = histories.map(history => {
       const booking = bookings.find(b => b.appointmentId === history.appointmentId);
+      const appointmentDate = booking ? booking.appointmentDate : null;
+
+      if (!appointmentDate) {
+        console.log(`⚠️ No appointmentDate found for appointmentId: ${history.appointmentId}`);
+      }
+
       return {
         appointmentId: history.appointmentId,
         timestamp: history.createdAt, // Timestamp from PatientHistory
-        appointmentDate: booking ? booking.appointmentDate : null, // Get date if found
+        appointmentDate, // Get date if found
       };
     });
 
     res.status(200).json({ appointmentData });
 
   } catch (error) {
-    console.error('Error fetching history IDs:', error);
+    console.error('❌ Error fetching history IDs:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
 
 
 // History by id
@@ -153,5 +170,6 @@ router.post("/getNotesSummary", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 
 module.exports = router;

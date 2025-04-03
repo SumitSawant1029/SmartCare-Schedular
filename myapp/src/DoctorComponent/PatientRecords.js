@@ -8,6 +8,7 @@ const PatientRecords = () => {
   const { patientEmail } = useParams();
   const [appointmentData, setAppointmentData] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [summary, setSummary] = useState(""); // State for summary
 
   useEffect(() => {
     const fetchPatientRecords = async () => {
@@ -20,6 +21,7 @@ const PatientRecords = () => {
 
         if (response.ok) {
           const data = await response.json();
+          console.log(data);
           const sortedRecords = data.appointmentData.sort(
             (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
           );
@@ -32,7 +34,28 @@ const PatientRecords = () => {
       }
     };
 
+    const fetchNotesSummary = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/phis/getNotesSummary`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ patientEmail }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const filteredSummary = data.summary.replace(/For confidential support.*/i, ""); // Remove unwanted text
+          setSummary(filteredSummary.trim());
+        } else {
+          console.error("Error fetching notes summary");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
     fetchPatientRecords();
+    fetchNotesSummary();
   }, [patientEmail]);
 
   const fetchRecordDetails = async (appointmentId) => {
@@ -76,7 +99,15 @@ const PatientRecords = () => {
     <>
       <DoctorNavbar />
       <div className="records-container">
+        {/* Display Summary */}
+        <section className="notes-summary">
+          <h3>Summary</h3>
+          {summary ? <p>{summary}</p> : <p>No summary available.</p>}
+        </section>
         <h2>Patient Records</h2>
+
+        
+
         {appointmentData.length > 0 ? (
           <ul>
             {appointmentData.map((record) => (
