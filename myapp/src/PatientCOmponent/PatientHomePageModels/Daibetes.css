@@ -1,0 +1,133 @@
+
+.chatbot-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .chat-window {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .message {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 70%;
+    word-wrap: break-word;
+  }
+  
+  .message.bot {
+    background-color: #e1f5fe;
+    align-self: flex-start;
+    text-align: left;
+  }
+  
+  .message.user {
+    background-color: #c8e6c9;
+    align-self: flex-end;
+    text-align: right;
+  }
+  
+  .loading {
+    font-style: italic;
+    font-weight: bold;
+  }
+  
+  .chat-gif {
+    width: 100%;
+    max-width: 300px;
+    margin-top: 10px;
+    border-radius: 10px;
+  }
+  
+  .input-form {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .input-form input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .input-form button {
+    padding: 10px 20px;
+    background-color: #2980b9;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .input-form button:hover {
+    background-color: #1c5980;
+  }
+
+  .doctor-slider {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .doctor-card {
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  .doctor-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+  
+  .book-button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .doctor-slider {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .doctor-card {
+    min-width: 250px;
+    flex: 0 0 auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    scroll-snap-align: start;
+  }
+  
+  
+  
+  

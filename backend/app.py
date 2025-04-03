@@ -1,63 +1,55 @@
-from flask import Flask, request, jsonify
-import pickle
-import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-import pandas as pd
+import pickle as pkl
 import os
+import pandas as pd
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Load the model
-model_path = "model.pkl"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+scaler_path = os.path.join(script_dir, 'scaler.pkl')
+scaler = pkl.load(open(scaler_path, 'rb'))
 
-if os.path.exists(model_path):
-    with open(model_path, "rb") as file:
-        model = pickle.load(file)
-    print("✅ Model loaded successfully!")
-else:
-    print("❌ Model file not found! Please train and save the model first.")
-    exit()
+file_path = os.path.join(script_dir, 'nb.pkl')
+with open(file_path, 'rb') as f:
+    model = pkl.load(f)
 
-# Load dataset to fit the scaler
-dataset = pd.read_csv("diabetes.csv")
-dataset_X = dataset.iloc[:, [1, 4, 5, 7]].values  # Selecting features (Glucose, Insulin, BMI, Age)
-
-# Fit the scaler with dataset
-scaler = MinMaxScaler(feature_range=(0, 1))
-scaler.fit(dataset_X)
-
-@app.route("/", methods=["GET"])
-def home():
-    return "Diabetes Prediction API is running!"
-
-@app.route("/predict", methods=["POST"])
-def predict():
-    try:
-        data = request.json
-        glucose = float(data["Glucose"])
-        insulin = float(data["Insulin"])
-        bmi = float(data["BMI"])
-        age = float(data["Age"])
-
-        # Prepare input data
-        input_data = np.array([[glucose, insulin, bmi, age]])
-        input_scaled = scaler.transform(input_data)  # Scale input features
-
-        # Predict using the trained model
-        prediction = model.predict(input_scaled)[0]
-
-        # Return result
+def predict(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, Bmi, Dpf, Age):
+    input_data = pd.DataFrame([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, Bmi, Dpf, Age]])
+    input_data = scaler.transform(input_data)
+    prediction = model.predict(input_data)
+    
+    if prediction == 1:
         result = {
-            "Glucose": glucose,
-            "Insulin": insulin,
-            "BMI": bmi,
-            "Age": age,
-            "Diabetes_Prediction": "Positive" if prediction == 1 else "Negative"
+            'prediction': "You have high chances of Diabetes! Please consult a Doctor",
+            'gif_url': "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTZlY2pwcDNtcnNhc2JwdDk4YnVqenRpcXl0OXFxdWRya3U0dmZ4aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6wrebnKWmvx4ZBio/giphy.gif"
         }
+    else:
+        result = {
+            'prediction': "You have low chances of Diabetes. Please maintain a healthy life style",
+            'gif_url': "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2txb242N3pkMmp0ODRiangydm9raDY5OHBhYmw1Y2NobjM0cGZtNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/W1GG6RYUcWxoHl3jV9/giphy.gif"
+        }
+    
+    return result
+
+@app.route('/predict', methods=['POST'])
+def predictions():
+    if request.method == 'POST':
+        data = request.get_json()
+        Age = data.get('Age')
+        Pregnancies = data.get('Pregnancies')
+        Glucose = data.get('Glucose')
+        BloodPressure = data.get('BloodPressure')
+        Insulin = data.get('Insulin')
+        Bmi = data.get('BMI')
+        SkinThickness = data.get('SkinThickness')
+        Dpf = data.get('DPF')
+        
+        result = predict(Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, Bmi, Dpf, Age)
         return jsonify(result)
+    
+    return "Invalid request method"
 
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000, debug=True)

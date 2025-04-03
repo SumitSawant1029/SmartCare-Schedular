@@ -593,4 +593,36 @@ router.post('/reviews/submit', async (req, res) => {
   }
 });
 
+// ROUTE: Get Doctors by Specialization using: GET "/api/doctor/specialization/:specialization"
+router.get('/specialization/:specialization', async (req, res) => {
+  const { specialization } = req.params;
+
+  try {
+    // Fetch doctors based on specialization
+    const doctors = await Doctor.find({ specialization });
+
+    if (doctors.length === 0) {
+      return res.status(404).json({ success: false, message: 'No doctors found for this specialization' });
+    }
+
+    // Fetch user details for each doctor
+    const doctorsWithNames = await Promise.all(
+      doctors.map(async (doctor) => {
+        const user = await User.findOne({ email: doctor.email }, 'firstname lastname');
+        return {
+          ...doctor.toObject(),
+          name: user ? `${user.firstname} ${user.lastname}` : 'Unknown', // Combine first and last name
+        };
+      })
+    );
+
+    res.json({ success: true, data: doctorsWithNames });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
 module.exports = router;

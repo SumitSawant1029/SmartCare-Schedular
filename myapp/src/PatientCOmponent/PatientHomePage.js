@@ -9,6 +9,8 @@ import heart from "../Asset/HeartDisease_PatientHomePage.jpg";
 import stroke from "../Asset/Stroke_PatientHomePage.jpg";
 import diabetes from "../Asset/Daibetes_PatientHomePage.jpg";
 
+import { useNavigate } from 'react-router-dom';
+
 const diseaseDecisionTrees = {
   Lung: decisionTree.lung,
   Brain: decisionTree.brain,
@@ -23,12 +25,17 @@ const PatientHomePage = () => {
   const [currentNode, setCurrentNode] = useState(null);
   const [recommendedSpecialist, setRecommendedSpecialist] = useState(null);
   const [selectedDisease, setSelectedDisease] = useState(null);
+  const navigate = useNavigate();
 
-  const startSymptomChecker = (disease) => {
-    setIsQAActive(true);
-    setCurrentNode(diseaseDecisionTrees[disease]);
-    setRecommendedSpecialist(null);
-    setSelectedDisease(disease);
+  const handleCardClick = (disease) => {
+    if (disease === "Diabetes") {
+      navigate('/Diabetes');
+    } else {
+      setIsQAActive(true);
+      setCurrentNode(diseaseDecisionTrees[disease]);
+      setRecommendedSpecialist(null);
+      setSelectedDisease(disease);
+    }
   };
 
   const handleAnswer = (answer) => {
@@ -59,7 +66,7 @@ const PatientHomePage = () => {
                 { name: "Stroke", img: stroke, desc: "Brain blood flow disruption causing paralysis and speech loss." },
                 { name: "Diabetes", img: diabetes, desc: "Chronic high blood sugar levels leading to multiple health issues." }
               ].map((disease, index) => (
-                <div key={index} className="disease-card" onClick={() => startSymptomChecker(disease.name)}>
+                <div key={index} className="disease-card" onClick={() => handleCardClick(disease.name)}>
                   <img src={disease.img} alt={`${disease.name} Disease`} />
                   <h3>{disease.name} Disease</h3>
                   <p>{disease.desc}</p>
@@ -98,3 +105,4 @@ const PatientHomePage = () => {
 };
 
 export default PatientHomePage;
+
