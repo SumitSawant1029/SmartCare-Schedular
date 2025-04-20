@@ -56,7 +56,7 @@ router.post("/bookings", async (req, res) => {
         $gte: startOfDayUTC,
         $lt: endOfDayUTC,
       },
-      status: { $ne: "PCancelled" },
+      status: { $nin: ["PCancelled", "DCancelled", "Completed"] },
     });
     if (existingSameDayBooking) {
       return res
@@ -68,7 +68,7 @@ router.post("/bookings", async (req, res) => {
     const existingBookingForDoctor = await Booking.findOne({
       patientEmail,
       doctorEmail,
-      status: { $ne: "PCancelled" },
+      status: { $nin: ["PCancelled", "DCancelled", "Completed"] },
     });
     if (existingBookingForDoctor) {
       return res
@@ -280,13 +280,14 @@ router.post("/available-slots", async (req, res) => {
         $gte: appointmentDate, // Start of the day (00:00:00 UTC)
         $lt: new Date(appointmentDate.getTime() + 24 * 60 * 60 * 1000), // End of the day
       },
-      status: {$nin: ["PCancelled", "DCancelled"] }
+      status: { $nin: ["PCancelled", "DCancelled"] }
     });
 
-    // Extract booked time slots properly in HH:MM format
+    // Extract booked time slots in local time in HH:MM format
     const bookedSlots = bookedAppointments.map((appointment) => {
       const bookedTime = new Date(appointment.appointmentDate);
-      return `${bookedTime.getUTCHours()}:00`; // Ensuring UTC-based extraction
+      // Use getHours() to get the local hour (e.g., 10 for 10:00 AM)
+      return `${bookedTime.getHours()}:00`;
     });
 
     // Generate full list of available time slots and filter out booked slots
@@ -424,4 +425,52 @@ router.post("/appointmentscount", async (req, res) => {
 });
 
 
+// GET confirmed doctor emails for a given patient email
+router.get('/confirmed-doctors', async (req, res) => {
+  const { email } = req.query;
+
+  console.log('➡️ Received request for confirmed doctor emails.');
+  console.log('📧 Patient Email:', email);
+
+  if (!email) {
+    console.warn('⚠️ No patient email provided in query.');
+    return res.status(400).json({ error: 'Patient email is required' });
+  }
+
+  try {
+    const confirmedBookings = await Booking.find({
+      patientEmail: email,
+    })
+
+    console.log(`🔍 Found ${confirmedBookings.length} confirmed bookings:`);
+
+    confirmedBookings.forEach((booking, index) => {
+      console.log(`  #${index + 1}:`, booking.doctorEmail);
+    });
+
+    const doctorEmails = confirmedBookings.map(b => b.doctorEmail);
+
+    res.json({ doctorEmails });
+  } catch (err) {
+    console.error('❌ Error while fetching confirmed bookings:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.get('/testallbookings', async (req, res) => {
+  try {
+    const bookings = await Booking.find({});
+    console.log(`🧪 Total bookings in DB: ${bookings.length}`);
+    bookings.forEach((b, i) => {
+      console.log(`#${i + 1} Email: ${b.patientEmail}, Status: ${b.status}`);
+    });
+
+    res.json({ total: bookings.length, bookings });
+  } catch (err) {
+    console.error('❌ Error fetching all bookings:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
+

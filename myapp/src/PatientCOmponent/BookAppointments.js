@@ -63,41 +63,55 @@ const BookAppointments = () => {
 
   const handleBooking = async (e) => {
     e.preventDefault();
-
+  
     if (!appointmentDate || !appointmentTime || !symptoms) {
       alert("Please fill all fields");
       return;
     }
-
+  
     const selectedDate = new Date(appointmentDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
+  
     if (selectedDate < today) {
       alert("You cannot select a past date.");
       return;
     }
-
+  
+    // Convert '03:00 PM' → 24-hour format
+    const time12 = appointmentTime.trim();
+    const [time, modifier] = time12.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+  
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+  
+    // Combine date and time
+    const combinedDateTime = new Date(appointmentDate);
+    combinedDateTime.setHours(hours);
+    combinedDateTime.setMinutes(minutes);
+    combinedDateTime.setSeconds(0);
+    combinedDateTime.setMilliseconds(0);
+  
     const bookingData = {
       patientName,
       patientEmail,
       doctorEmail,
       doctorName,
-      appointmentDate,
-      appointmentTime, // Ensure correct slot selection
+      appointmentDate: combinedDateTime.toISOString(), // full date-time goes here
       symptoms,
     };
-
+  
     try {
       const response = await fetch(`${API_URL}/api/book/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
       });
-
+  
       const data = await response.json();
       console.log("Booking Response:", data);
-
+  
       if (response.ok) {
         setPopupMessage("Appointment booked successfully!");
         setShowPopup(true);
@@ -112,6 +126,7 @@ const BookAppointments = () => {
       setShowPopup(true);
     }
   };
+  
 
   return (
     <>

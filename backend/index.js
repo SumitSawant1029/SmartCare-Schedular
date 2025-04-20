@@ -21,6 +21,7 @@ app.use('/api/adm', require('./routes/admin'));
 app.use('/api/book', require('./routes/booking'));
 app.use('/api/feedb', require('./routes/doctorfeedback'));
 app.use('/api/phis', require('./routes/patienthistory'));
+app.use('/api/booki', require('./routes/bookingroutes'));
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

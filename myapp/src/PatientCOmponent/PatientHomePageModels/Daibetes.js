@@ -3,17 +3,53 @@ import "./Daibetes.css"; // Ensure this has styles for horizontal scrolling
 import PatientNavbar from "../PatientNavbar";
 import { Link } from 'react-router-dom';
 
-
 const questions = [
-  { key: "Gender", text: "What is your gender? (Male/Female)", validate: (val) => /^(male|female)$/i.test(val) },
-  { key: "Age", text: "What is your age? (Enter a number)", validate: (val) => /^\d+$/.test(val) && val > 0 },
-  { key: "Pregnancies", text: "How many pregnancies have you had? (Only for females)", genderSpecific: "Female", validate: (val) => /^\d+$/.test(val) && val >= 0 },
-  { key: "Glucose", text: "What is your glucose level? (mg/dL)", validate: (val) => /^\d+(\.\d+)?$/.test(val) && val > 0 },
-  { key: "BloodPressure", text: "What is your blood pressure? (mmHg)", validate: (val) => /^\d+(\.\d+)?$/.test(val) && val > 0 },
-  { key: "Insulin", text: "What is your insulin level? (μU/mL)", validate: (val) => /^\d+(\.\d+)?$/.test(val) && val > 0 },
-  { key: "BMI", text: "What is your BMI? (kg/m²)", validate: (val) => /^\d+(\.\d+)?$/.test(val) && val > 0 },
-  { key: "SkinThickness", text: "What is your skin thickness? (mm)", validate: (val) => /^\d+(\.\d+)?$/.test(val) && val > 0 },
-  { key: "DPF", text: "What is your Diabetes Pedigree Function (DPF)? (Decimal value)", validate: (val) => /^\d+(\.\d+)?$/.test(val) && val > 0 },
+  {
+    key: "Gender",
+    text: "What is your gender? (Male/Female)",
+    validate: (val) => /^(male|female)$/i.test(val),
+  },
+  {
+    key: "Age",
+    text: "What is your age? (Between 1 and 120)",
+    validate: (val) => /^\d+$/.test(val) && val > 0 && val <= 120,
+  },
+  {
+    key: "Pregnancies",
+    text: "How many pregnancies have you had? (Only for females, 0-20)",
+    genderSpecific: "Female",
+    validate: (val) => /^\d+$/.test(val) && val >= 0 && val <= 20,
+  },
+  {
+    key: "Glucose",
+    text: "What is your glucose level? (Between 50 and 300 mg/dL)",
+    validate: (val) => /^\d+(\.\d+)?$/.test(val) && val >= 50 && val <= 300,
+  },
+  {
+    key: "BloodPressure",
+    text: "What is your blood pressure? (Between 40 and 200 mmHg)",
+    validate: (val) => /^\d+(\.\d+)?$/.test(val) && val >= 40 && val <= 200,
+  },
+  {
+    key: "Insulin",
+    text: "What is your insulin level? (Between 10 and 900 μU/mL)",
+    validate: (val) => /^\d+(\.\d+)?$/.test(val) && val >= 10 && val <= 900,
+  },
+  {
+    key: "BMI",
+    text: "What is your BMI? (Between 10 and 60 kg/m²)",
+    validate: (val) => /^\d+(\.\d+)?$/.test(val) && val >= 10 && val <= 60,
+  },
+  {
+    key: "SkinThickness",
+    text: "What is your skin thickness? (Between 5 and 100 mm)",
+    validate: (val) => /^\d+(\.\d+)?$/.test(val) && val >= 5 && val <= 100,
+  },
+  {
+    key: "DPF",
+    text: "What is your Diabetes Pedigree Function (DPF)? (Between 0.1 and 2.5)",
+    validate: (val) => /^\d+(\.\d+)?$/.test(val) && val >= 0.1 && val <= 2.5,
+  },
 ];
 
 const Diabetes = () => {
@@ -53,73 +89,88 @@ const Diabetes = () => {
     setCollectedData(updatedData);
     setInputValue("");
 
+    // Compute next index with skip logic
     let nextIndex = currentQuestionIndex + 1;
-    if (currentQuestion.key === "Gender" && inputValue.toLowerCase() === "male") {
-      while (nextIndex < questions.length && questions[nextIndex].key === "Pregnancies") {
+
+    // Skip female-specific questions if gender is male
+    if (updatedData.Gender?.toLowerCase() === 'male') {
+      while (
+        nextIndex < questions.length &&
+        questions[nextIndex].genderSpecific === 'Female'
+      ) {
         nextIndex++;
+      }
+    }
+
+    // Skip pregnancies question if age < 18
+    if (updatedData.Age !== undefined) {
+      const age = parseInt(updatedData.Age, 10);
+      if (age < 18) {
+        while (
+          nextIndex < questions.length &&
+          questions[nextIndex].key === 'Pregnancies'
+        ) {
+          nextIndex++;
+        }
       }
     }
 
     if (nextIndex < questions.length) {
       setCurrentQuestionIndex(nextIndex);
       setConversation((prev) => [...prev, { sender: "bot", text: questions[nextIndex].text }]);
-    } else {
-      setLoading(true);
-      setConversation((prev) => [...prev, { sender: "bot", text: "🤖 Thinking..." }]);
-
-      try {
-        const response = await fetch("http://localhost:8000/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedData),
-        });
-
-        const result = await response.json();
-        setConversation((prev) => [
-          ...prev,
-          { sender: "bot", text: result.prediction },
-          { sender: "bot", text: `Here is something for you:`, gif: result.gif_url },
-        ]);
-
-        if (result.prediction.toLowerCase().includes("diabetes")) {
-          fetchDoctors();
-        }
-      } catch (error) {
-        setConversation((prev) => [...prev, { sender: "bot", text: "Oops, an error occurred!" }]);
-      }
-
-      setLoading(false);
+      return;
     }
+
+    // Before sending to predict, ensure pregnancies default for male
+    if (updatedData.Gender?.toLowerCase() === 'male' && updatedData.Pregnancies === undefined) {
+      updatedData.Pregnancies = '0';
+    }
+
+    // All questions answered, call prediction
+    setLoading(true);
+    setConversation((prev) => [...prev, { sender: "bot", text: "🤖 Thinking..." }]);
+
+    try {
+      const response = await fetch("http://localhost:8000/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      });
+
+      const result = await response.json();
+      setConversation((prev) => [
+        ...prev,
+        { sender: "bot", text: result.prediction },
+      ]);
+
+      if (result.prediction.toLowerCase().includes("diabetes")) {
+        fetchDoctors();
+      }
+    } catch (error) {
+      setConversation((prev) => [...prev, { sender: "bot", text: "Oops, an error occurred!" }]);
+    }
+
+    setLoading(false);
   };
 
   const fetchDoctors = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/doc/specialization/Diabetologist");
       const data = await response.json();
-  
-      console.log("✅ API Response:", data);
-      console.log("✅ Fetched Doctors Before Filtering:", data.data);
-  
+
       const approvedDoctors = data.data.filter((doc) => doc.isApproved);
-      console.log("✅ Approved Doctors After Filtering:", approvedDoctors); // Log after filtering
-  
       if (approvedDoctors.length > 0) {
         const sortedDoctors = approvedDoctors.sort((a, b) => b.review - a.review);
-        console.log("✅ Sorted Doctors:", sortedDoctors); // Log after sorting
         setDoctors(sortedDoctors);
-  
         setConversation((prev) => [
           ...prev,
           { sender: "bot", text: "I recommend these specialists for you:" },
         ]);
-      } else {
-        console.log("⚠️ No approved doctors found after filtering!");
       }
     } catch (error) {
       console.error("❌ Error fetching doctors:", error);
     }
   };
-  
 
   return (
     <>
@@ -130,43 +181,37 @@ const Diabetes = () => {
           {conversation.map((msg, index) => (
             <div key={index} className={`message ${msg.sender}`}>
               {msg.text}
-              {msg.gif && <img src={msg.gif} alt="Diabetes info" className="chat-gif" />}
             </div>
           ))}
 
-          {/* Horizontal Doctor Slider inside the chat */}
           {doctors.length > 0 && (
-  <div className="message bot">
-    <p>I recommend these specialists for you:</p>
-    <div className="doctor-slider">
-      {doctors.map((doctor, index) => (
-        <div key={doctor._id || index} className="doctor-card">
-          <img
-            src={doctor.profilePicture || "https://via.placeholder.com/150"}
-            alt={doctor.email}
-            className="doctor-image"
-          />
-          <div className="doctor-info">
-            <h4>{doctor.name}</h4>
-            <p>🏥 {doctor.hospital}</p>
-            <p>⭐ {doctor.review.toFixed(1)} / 5</p>
-            <p>📅 {doctor.yearsOfExperience} years of experience</p>
-            <Link
+            <div className="message bot">
+              <div className="doctor-slider">
+                {doctors.map((doctor, index) => (
+                  <div key={doctor._id || index} className="doctor-card">
+                    <img
+                      src={doctor.profilePicture || "https://via.placeholder.com/150"}
+                      alt={doctor.email}
+                      className="doctor-image"
+                    />
+                    <div className="doctor-info">
+                      <h4>{doctor.name}</h4>
+                      <p>🏥 {doctor.hospital}</p>
+                      <p>⭐ {doctor.review.toFixed(1)} / 5</p>
+                      <p>📅 {doctor.yearsOfExperience} years of experience</p>
+                      <Link
                         to={`/bookappointments?email=${encodeURIComponent(
                           doctor.email
                         )}&name=${encodeURIComponent(doctor.name)}`}
                       >
-                        <button className="btn btn-primary">
-                          Book Appointment
-                        </button>
+                        <button className="btn btn-primary">Book Appointment</button>
                       </Link>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {loading && <div className="message bot loading">🤖 Thinking...</div>}
         </div>

@@ -71,6 +71,8 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 const AllDoctors = () => {
+  const patientEmail = localStorage.getItem("email"); // Add this to get the email from localStorage
+
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -107,7 +109,7 @@ const AllDoctors = () => {
         const response = await fetch(`${API_URL}/api/doc/getallusers/doctor`);
         const data = await response.json();
         let doctorsWithDistance = data || [];
-
+    
         // If user location is available, calculate distance for each doctor
         if (userLocation) {
           doctorsWithDistance = doctorsWithDistance.map((doctor) => {
@@ -115,7 +117,6 @@ const AllDoctors = () => {
               doctor?.userDetails?.location?.coordinates &&
               doctor.userDetails.location.coordinates.length >= 2
             ) {
-              // GeoJSON stores coordinates as [longitude, latitude]
               const doctorLon = doctor.userDetails.location.coordinates[0];
               const doctorLat = doctor.userDetails.location.coordinates[1];
               const distance = calculateDistance(
@@ -128,17 +129,24 @@ const AllDoctors = () => {
             }
             return { ...doctor, distance: Infinity }; // If no location, assign a large distance
           });
-          // Sort doctors by distance (closest first)
           doctorsWithDistance.sort((a, b) => a.distance - b.distance);
         }
-
-        setDoctors(doctorsWithDistance);
-        setFilteredDoctors(doctorsWithDistance.slice(0, doctorsPerPage));
+    
+        // Filter out doctors already booked by the patient
+        const confirmedDoctorEmails = await fetch(`${API_URL}/api/booki/confirmeddoctors?email=${patientEmail}`);
+        const confirmedData = await confirmedDoctorEmails.json();
+        const bookedDoctors = confirmedData?.doctorEmails || [];
+    
+        const availableDoctors = doctorsWithDistance.filter(
+          (doctor) => !bookedDoctors.includes(doctor?.email)
+        );
+    
+        setDoctors(availableDoctors);
+        setFilteredDoctors(availableDoctors.slice(0, doctorsPerPage));
       } catch (error) {
         console.error("Error fetching doctors:", error);
       }
     };
-
     fetchDoctors();
   }, [userLocation]);
 
