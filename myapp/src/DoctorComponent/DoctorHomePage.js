@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './DoctorHomePage.css';
 import DoctorNavbar from './DoctorNavbar';
 import API_URL from '../config';
+import { FaFilePdf, FaNotesMedical, FaUserInjured, FaCalendarAlt, FaClock, FaStethoscope } from 'react-icons/fa';
 
 const DoctorHomePage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -10,42 +11,38 @@ const DoctorHomePage = () => {
   const [prescription, setPrescription] = useState(null);
   const [report, setReport] = useState(null);
   const [notes, setNotes] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const doctorEmail = localStorage.getItem('email');
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        console.log('Fetching appointments for doctor:', doctorEmail);
+        setIsLoading(true);
         const response = await fetch(`${API_URL}/api/book/appointments/doctor`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ doctorEmail }),
         });
 
-        console.log('Response status:', response.status);
         if (response.ok) {
           const data = await response.json();
-          console.log('Appointments data:', data);
-
           const today = new Date().setHours(0, 0, 0, 0);
           const filteredAppointments = data.appointments.filter((appointment) => {
             const appointmentDate = new Date(appointment.appointmentDate).setHours(0, 0, 0, 0);
             return (
               appointmentDate === today &&
               appointment.status !== 'PCancelled' &&
-              appointment.status !== 'DCancelled'  &&
+              appointment.status !== 'DCancelled' &&
               appointment.status !== 'Completed'
             );
           });
-
-          console.log('Filtered Appointments:', filteredAppointments);
           setAppointments(filteredAppointments);
-        } else {
-          console.error('Error fetching appointments');
         }
       } catch (error) {
         console.error('Error:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -53,20 +50,20 @@ const DoctorHomePage = () => {
   }, [doctorEmail]);
 
   const handleViewAllRecords = (email) => {
-    console.log('Navigating to patient records for:', email);
     navigate(`/patient-records/${email}`);
   };
 
   const handleFileChange = (event, setFile) => {
     const file = event.target.files[0];
-    console.log('Selected file:', file);
-    
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      console.log('File converted to base64');
-      setFile(reader.result.split(',')[1]); // Extract base64 data
-    };
-    if (file) reader.readAsDataURL(file);
+    if (file && file.type === 'application/pdf') {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFile(reader.result.split(',')[1]);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      alert('Please select a PDF file');
+    }
   };
 
   const handleSubmit = async () => {
@@ -74,14 +71,6 @@ const DoctorHomePage = () => {
       alert('All fields are required!');
       return;
     }
-
-    console.log('Submitting patient history:', {
-      appointmentId: selectedAppointment?._id,
-      patientEmail: selectedAppointment?.patientEmail,
-      prescription,
-      report,
-      notes,
-    });
 
     try {
       const response = await fetch(`${API_URL}/api/phis/addhistory`, {
@@ -96,18 +85,13 @@ const DoctorHomePage = () => {
         }),
       });
 
-      console.log('API Response Status:', response.status);
       if (response.ok) {
-        console.log('Patient history successfully added');
-        alert('Patient history added and appointment marked as complete!');
+        alert('Patient history added successfully!');
         setSelectedAppointment(null);
         setPrescription(null);
         setReport(null);
         setNotes('');
         window.location.reload();
-      } else {
-        const errorResponse = await response.json();
-        console.error('Failed to add patient history:', errorResponse);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -117,58 +101,133 @@ const DoctorHomePage = () => {
   return (
     <>
       <DoctorNavbar />
-      <div className="dashboard">
-        <main>
-          <section className="appointments">
-            <h2>Today's Appointments</h2>
-            <div className="appointments-list">
-              {appointments.length > 0 ? (
-                <ul>
-                  {appointments.map((appointment) => (
-                    <li key={appointment._id} className="appointment-card">
-                      <div className="appointment-details">
-                        <p><strong>Patient:</strong> {appointment.patientName}</p>
-                        <p><strong>Symptoms:</strong> {appointment.symptoms}</p>
-                        <p><strong>Date:</strong> {new Date(appointment.appointmentDate).toDateString()}</p>
-                        <p><strong>Time:</strong> {new Date(appointment.appointmentDate).toLocaleTimeString()}</p>
-                      </div>
-                      <button className="btn view-history-btn" onClick={() => handleViewAllRecords(appointment.patientEmail)}>
-                        View All Records
-                      </button>
-                      <button className="btn complete-btn" onClick={() => setSelectedAppointment(appointment)}>
-                        Complete
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No appointments for today!</p>
-              )}
+      <div className="doctor-dashboard">
+        <main className="doctor-main-content">
+          <section className="appointments-section">
+            <div className="section-header">
+              <h2><FaCalendarAlt /> Today's Appointments</h2>
+              <p className="appointment-count">{appointments.length} appointment(s)</p>
             </div>
+            
+            {isLoading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Loading appointments...</p>
+              </div>
+            ) : appointments.length > 0 ? (
+              <div className="appointments-grid">
+                {appointments.map((appointment) => (
+                  <div key={appointment._id} className="appointment-card">
+                    <div className="card-header">
+                      <h3><FaUserInjured /> {appointment.patientName}</h3>
+                      <span className={`status-badge ${appointment.status.toLowerCase()}`}>
+                        {appointment.status}
+                      </span>
+                    </div>
+                    <div className="card-body">
+                      <div className="appointment-detail">
+                        <FaStethoscope className="detail-icon" />
+                        <p><strong>Symptoms:</strong> {appointment.symptoms}</p>
+                      </div>
+                      <div className="appointment-detail">
+                        <FaClock className="detail-icon" />
+                        <p>{new Date(appointment.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                    </div>
+                    <div className="card-footer">
+                      <button 
+                        className="btn records-btn"
+                        onClick={() => handleViewAllRecords(appointment.patientEmail)}
+                      >
+                        View Records
+                      </button>
+                      <button 
+                        className="btn complete-btn"
+                        onClick={() => setSelectedAppointment(appointment)}
+                      >
+                        Complete Visit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-appointments">
+                <img src="/images/no-appointments.svg" alt="No appointments" />
+                <p>No appointments scheduled for today</p>
+              </div>
+            )}
           </section>
         </main>
-        <footer>
-          <p>Smart Care Scheduler © 2025</p>
-        </footer>
-      </div>
-      
-      {selectedAppointment && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>Complete Appointment</h2>
-            <label>Prescription (PDF):</label>
-            <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, setPrescription)} />
-            <label>Medical Report (PDF):</label>
-            <input type="file" accept="application/pdf" onChange={(e) => handleFileChange(e, setReport)} />
-            <label>Doctor's Notes:</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)}></textarea>
-            <div className="modal-buttons">
-              <button className="btn close-btn" onClick={() => setSelectedAppointment(null)}>Close</button>
-              <button className="btn complete-btn" onClick={handleSubmit}>Mark as Complete</button>
+
+        {selectedAppointment && (
+          <div className="modal-overlay">
+            <div className="completion-modal">
+              <div className="modal-header">
+                <h3>Complete Appointment</h3>
+                <button 
+                  className="close-modal"
+                  onClick={() => setSelectedAppointment(null)}
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>
+                    <FaFilePdf /> Prescription (PDF only)
+                  </label>
+                  <div className="file-upload">
+                    <input 
+                      type="file" 
+                      accept="application/pdf" 
+                      onChange={(e) => handleFileChange(e, setPrescription)} 
+                    />
+                    <span>{prescription ? 'File selected' : 'Choose file'}</span>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>
+                    <FaFilePdf /> Medical Report (PDF only)
+                  </label>
+                  <div className="file-upload">
+                    <input 
+                      type="file" 
+                      accept="application/pdf" 
+                      onChange={(e) => handleFileChange(e, setReport)} 
+                    />
+                    <span>{report ? 'File selected' : 'Choose file'}</span>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>
+                    <FaNotesMedical /> Doctor's Notes
+                  </label>
+                  <textarea 
+                    value={notes} 
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Enter your clinical notes here..."
+                  ></textarea>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  className="btn cancel-btn"
+                  onClick={() => setSelectedAppointment(null)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn submit-btn"
+                  onClick={handleSubmit}
+                >
+                  Submit & Complete
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 };

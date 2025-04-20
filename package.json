@@ -5,7 +5,7 @@
   "scripts": {
     "client": "npm start --prefix myapp",
     "server": "nodemon --watch backend ./backend/index.js",
-    "start": "concurrently \"npm run client\" \"npm run server\""
+    "start": "concurrently \"npm run client\" \"npm run server\"\"\""
   },
   "dependencies": {
     "dotenv": "^16.4.7",

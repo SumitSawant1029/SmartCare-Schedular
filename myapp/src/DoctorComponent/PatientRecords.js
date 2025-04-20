@@ -1,10 +1,13 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API_URL from "../config";
 import "./PatientRecords.css";
 import DoctorNavbar from "./DoctorNavbar";
+import { FaFilePdf, FaCalendarAlt, FaNotesMedical, FaUserMd, FaDownload, FaTimes } from "react-icons/fa";
 
 const PatientRecords = () => {
+  // ... [keep all your existing state and logic exactly as is]
   const { patientEmail } = useParams();
   const [appointmentData, setAppointmentData] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -98,61 +101,112 @@ const PatientRecords = () => {
   return (
     <>
       <DoctorNavbar />
-      <div className="records-container">
-        {/* Display Summary */}
-        <section className="notes-summary">
-          <h3>Summary</h3>
-          {summary ? <p>{summary}</p> : <p>No summary available.</p>}
-        </section>
-        <h2>Patient Records</h2>
-
-        
-
-        {appointmentData.length > 0 ? (
-          <ul>
-            {appointmentData.map((record) => (
-              <li key={record.appointmentId}>
-                <button
-                  className="record-button"
-                  onClick={() => fetchRecordDetails(record.appointmentId)}
-                >
-                  {`Appointment ID: ${record.appointmentId} | Date: ${new Date(
-                    record.appointmentDate
-                  ).toDateString()}`}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No records found for this patient.</p>
-        )}
-      </div>
-
-      {selectedRecord && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h3>Record Details</h3>
-            <p>
-              <strong>Notes:</strong> {selectedRecord.notes}
-            </p>
-            <button
-              className="btn download-btn"
-              onClick={() => downloadPdf(selectedRecord.prescription, "prescription.pdf")}
-            >
-              Download Prescription
-            </button>
-            <button
-              className="btn download-btn"
-              onClick={() => downloadPdf(selectedRecord.report, "report.pdf")}
-            >
-              Download Report
-            </button>
-            <button className="btn close-btn" onClick={() => setSelectedRecord(null)}>
-              Close
-            </button>
+      <div className="patient-records-container">
+        <div className="records-header">
+          <h1>Patient Medical Records</h1>
+          <div className="patient-info-card">
+            <div className="patient-avatar">
+              {patientEmail.charAt(0).toUpperCase()}
+            </div>
+            <div className="patient-details">
+              <h3>Patient: {patientEmail}</h3>
+              <p>{appointmentData.length} recorded visits</p>
+            </div>
           </div>
         </div>
-      )}
+
+        <div className="records-grid">
+          {/* Summary Section */}
+          <div className="summary-card">
+            <div className="card-header">
+              <FaNotesMedical className="header-icon" />
+              <h3>Clinical Summary</h3>
+            </div>
+            <div className="card-body">
+              {summary ? (
+                <p className="summary-text">{summary}</p>
+              ) : (
+                <p className="no-data">No summary available</p>
+              )}
+            </div>
+          </div>
+
+          {/* Appointments List */}
+          <div className="appointments-card">
+            <div className="card-header">
+              <FaCalendarAlt className="header-icon" />
+              <h3>Visit History</h3>
+            </div>
+            <div className="card-body">
+              {appointmentData.length > 0 ? (
+                <div className="appointments-list">
+                  {appointmentData.map((record) => (
+                    <div 
+                      key={record.appointmentId} 
+                      className="appointment-item"
+                      onClick={() => fetchRecordDetails(record.appointmentId)}
+                    >
+                      <div className="appointment-date">
+                        {new Date(record.appointmentDate).toLocaleDateString()}
+                      </div>
+                      <div className="appointment-id">
+                        Visit ID: {record.appointmentId}
+                      </div>
+                      <div className="view-details">View Details →</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="no-data">No records found for this patient</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Record Details Modal */}
+        {selectedRecord && (
+          <div className="modal-overlay">
+            <div className="record-modal">
+              <div className="modal-header">
+                <h3>
+                  <FaUserMd /> Visit Details
+                </h3>
+                <button 
+                  className="close-modal"
+                  onClick={() => setSelectedRecord(null)}
+                >
+                  <FaTimes />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="notes-section">
+                  <h4><FaNotesMedical /> Doctor's Notes</h4>
+                  <div className="notes-content">
+                    {selectedRecord.notes || "No notes available"}
+                  </div>
+                </div>
+                <div className="documents-section">
+                  <h4>Documents</h4>
+                  <div className="document-buttons">
+                    <button
+                      className="download-btn"
+                      onClick={() => downloadPdf(selectedRecord.prescription, "prescription.pdf")}
+                    >
+                      <FaFilePdf /> Prescription
+                    </button>
+                    <button
+                      className="download-btn"
+                      onClick={() => downloadPdf(selectedRecord.report, "report.pdf")}
+                    >
+                      <FaFilePdf /> Medical Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 };

@@ -1,56 +1,274 @@
-/* Styles for the patient records container */
-.records-container {
-    max-width: 800px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #ffffff;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    text-align: center;
+/* PatientRecords.css */
+
+/* Base Styles */
+.patient-records-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.records-header {
+  margin-bottom: 2rem;
+}
+
+.records-header h1 {
+  color: #2c3e50;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+/* Patient Info Card */
+.patient-info-card {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.patient-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3498db, #9b59b6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-right: 1.5rem;
+}
+
+.patient-details h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.patient-details p {
+  margin: 0.5rem 0 0;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+/* Records Grid Layout */
+.records-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .records-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card Styles */
+.summary-card,
+.appointments-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e5eb;
+  display: flex;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.header-icon {
+  margin-right: 0.75rem;
+  color: #3498db;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Summary Section */
+.summary-text {
+  color: #34495e;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Appointments List */
+.appointments-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.appointment-item {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f1f1;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.appointment-item:hover {
+  background-color: #f8f9fa;
+}
+
+.appointment-date {
+  font-weight: 500;
+  color: #2c3e50;
+  min-width: 100px;
+}
+
+.appointment-id {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  flex-grow: 1;
+  padding: 0 1rem;
+}
+
+.view-details {
+  color: #3498db;
+  font-weight: 500;
+}
+
+/* No Data State */
+.no-data {
+  color: #95a5a6;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.record-modal {
+  background: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e5eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #95a5a6;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+  color: #e74c3c;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.notes-section {
+  margin-bottom: 2rem;
+}
+
+.notes-section h4 {
+  color: #2c3e50;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.notes-content {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.documents-section h4 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.document-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.download-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.download-btn:hover {
+  background: #2980b9;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+  .document-buttons {
+    flex-direction: column;
   }
   
-  /* Header styling */
-  .records-container h2 {
-    color: #333;
-    font-size: 24px;
-    margin-bottom: 20px;
+  .appointment-item {
+    flex-direction: column;
+    align-items: flex-start;
   }
   
-  /* List styles */
-  .records-container ul {
-    list-style: none;
-    padding: 0;
+  .appointment-id {
+    padding: 0.5rem 0;
   }
-  
-  /* Individual list item */
-  .records-container li {
-    margin: 10px 0;
-  }
-  
-  /* Appointment record buttons */
-  .record-button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    background: linear-gradient(135deg, #4CAF50, #2E8B57);
-    color: #fff;
-    transition: 0.3s ease-in-out;
-    text-align: center;
-    display: block;
-  }
-  
-  .record-button:hover {
-    background: linear-gradient(135deg, #45a049, #246b3f);
-    transform: scale(1.03);
-  }
-  
-  /* Message when no records are available */
-  .records-container p {
-    font-size: 18px;
-    color: #777;
-    margin-top: 20px;
-  }
-  
+}
