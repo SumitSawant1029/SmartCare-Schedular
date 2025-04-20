@@ -24,6 +24,9 @@ import DoctorAppointmentHistory from './DoctorComponent/DoctorAppointmentHistory
 import PatientRecords from './DoctorComponent/PatientRecords';
 import PatientProfile from './PatientCOmponent/PatientProfile';
 import Diabetes from './PatientCOmponent/PatientHomePageModels/Daibetes';
+import Heart from './PatientCOmponent/PatientHomePageModels/Heart';
+import Brain from './PatientCOmponent/PatientHomePageModels/Brain';
+import Liver from './PatientCOmponent/PatientHomePageModels/Liver';
 function App() {
   return (
     <Router>
@@ -50,6 +53,9 @@ function App() {
          <Route path="/patient-records/:patientEmail" element={<PatientRecords />} />
          <Route path="/patientprofile" element={<PatientProfile />} />
          <Route path="/Diabetes" element={<Diabetes />} />
+         <Route path="/Heart" element={<Heart />} />
+         <Route path="/Brain" element={<Brain />} />
+         <Route path="/Liver" element={<Liver />} />
 
         </Routes>
       </div>
