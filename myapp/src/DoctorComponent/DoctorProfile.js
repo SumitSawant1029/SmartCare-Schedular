@@ -54,56 +54,53 @@ const DoctorProfile = () => {
   return (
     <>
       <Navbar />
-      <div className="doctor-profile-wrapper">
+      <div className="profile-container">
         <div className="profile-card">
-          <h2 className="title">Doctor Profile</h2>
-          <form onSubmit={handleUpdateProfile} className="profile-form">
-            <div className="form-group">
-              <label>First Name</label>
-              <input
-                type="text"
-                value={doctorDetails.firstname}
-                onChange={(e) =>
-                  setDoctorDetails({ ...doctorDetails, firstname: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Last Name</label>
-              <input
-                type="text"
-                value={doctorDetails.lastname}
-                onChange={(e) =>
-                  setDoctorDetails({ ...doctorDetails, lastname: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="email" value={doctorDetails.email} disabled />
-            </div>
-            <div className="form-group">
-              <label>Phone Number</label>
-              <input
-                type="text"
-                value={doctorDetails.mob}
-                onChange={(e) =>
-                  setDoctorDetails({ ...doctorDetails, mob: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Role</label>
-              <input type="text" value={doctorDetails.role} disabled />
-            </div>
-            <div className="form-group checkbox-group">
-              <label>Email Verified</label>
-              <input type="checkbox" checked={doctorDetails.isEmailVerified} disabled />
-            </div>
-            <button type="submit" className="btn-submit">Update Profile</button>
+          <h2>Doctor Profile</h2>
+          <form onSubmit={handleUpdateProfile}>
+            <label>First Name</label>
+            <input
+              type="text"
+              value={doctorDetails.firstname}
+              onChange={(e) =>
+                setDoctorDetails({ ...doctorDetails, firstname: e.target.value })
+              }
+              required
+              disabled
+            />
+
+            <label>Last Name</label>
+            <input
+              type="text"
+              value={doctorDetails.lastname}
+              onChange={(e) =>
+                setDoctorDetails({ ...doctorDetails, lastname: e.target.value })
+              }
+              required
+              disabled
+            />
+
+            <label>Email</label>
+            <input type="email" value={doctorDetails.email} disabled />
+
+            <label>Phone Number</label>
+            <input
+              type="text"
+              value={doctorDetails.mob}
+              onChange={(e) =>
+                setDoctorDetails({ ...doctorDetails, mob: e.target.value })
+              }
+              required
+              disabled
+            />
+
+            <label>Role</label>
+            <input type="text" value={doctorDetails.role} disabled />
+
+            <label>Email Verified</label>
+            <input type="checkbox" checked={doctorDetails.isEmailVerified} disabled />
+
+            <button type="submit">Update Profile</button>
           </form>
         </div>
       </div>

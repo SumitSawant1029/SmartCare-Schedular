@@ -1,6 +1,7 @@
 
 import './App.css';
 import React from "react";
+import ScrollToTop from "./ScrollToTop"; 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./CommonComponent/LandingPage";
 import Login from "./CommonComponent/Login";
@@ -30,6 +31,7 @@ import Liver from './PatientCOmponent/PatientHomePageModels/Liver';
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <div>
         <Routes>
           <Route path="/" element={<LandingPage/>} />
